@@ -81,7 +81,8 @@ extern int yydebug;
     RETURN = 282,                  /* RETURN  */
     IF = 283,                      /* IF  */
     ELSE = 284,                    /* ELSE  */
-    WHILE = 285                    /* WHILE  */
+    WHILE = 285,                   /* WHILE  */
+    LOWER_THAN_ELSE = 286          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif

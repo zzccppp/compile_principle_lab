@@ -8,7 +8,8 @@
 %token TYPE LP RP LB RB LC RC
 %token STRUCT RETURN IF ELSE WHILE
 
-
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 
 %%
 
@@ -76,7 +77,7 @@ StmtList:
 Stmt: Exp SEMI
     | CompSt
     | RETURN Exp SEMI
-    | IF LP Exp RP Stmt
+    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE;
     | IF LP Exp RP Stmt ELSE Stmt
     | WHILE LP Exp RP Stmt
     ;
@@ -95,7 +96,7 @@ DecList: Dec
        ;
 
 Dec: VarDec
-   | VarDec ASSIGNOP Exp
+   | VarDec ASSIGNOP AssignmentExAssignmentExp
    ;
 
 /* Exp: */
