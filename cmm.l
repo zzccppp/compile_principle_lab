@@ -6,10 +6,11 @@ P           ([Pp][+-]?{D}+)
 FS			(f|F|l|L)
 IS          ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 
-%option noyywrap
+%option noyywrap nodefault yylineno
 
 %{
 #include <stdio.h>
+void comment(void);
 // #include "y.tab.h"
 
 enum TokenType {
@@ -51,7 +52,7 @@ enum TokenType {
 "/*"			{ comment(); }
 "//"[^\n]*              {  }
 
-0[xX]{H}+{IS}?		{ return INT; }
+0[xX]{H}+{IS}?		{ printf("NUMBER\n"); return INT; }
 0[0-7]*{IS}?		{ return INT; }
 [1-9]{D}*{IS}?		{ return INT; }
 
@@ -111,10 +112,29 @@ void comment(void)
 }
 
 int main(int argc, char** argv) {
-	int tok;
+  if (argc < 2) {
+      //read from stdin
+      yylineno = 1;
+      int re = yylex();
+      printf("%d\n", re);
+  } else {
+    for(int i=1;i<argc;i++) {
+      FILE *f = fopen(argv[i], "r");
+      if (!f) {
+          printf("error to read file %s\n", argv[i]);
+          return 1;
+      }
+      yyrestart(f);
+      yylineno = 1;
+      yylex();
+      fclose(f);
+    }
+  }
+
+	/* int tok; */
 	
-	while ((tok = yylex()) != 0) {
-		// printf("%d\n", tok);
-		printf("%s\n", yytext);
-	}
+	/* while ((tok = yylex()) != 0) { */
+	/* 	// printf("%d\n", tok); */
+	/* 	printf("%s\n", yytext); */
+	/* } */
 }
