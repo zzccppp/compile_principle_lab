@@ -96,7 +96,7 @@ DecList: Dec
        ;
 
 Dec: VarDec
-   | VarDec ASSIGNOP AssignmentExAssignmentExp
+   | VarDec ASSIGNOP AssignmentExp
    ;
 
 /* Exp: */
@@ -190,3 +190,11 @@ Args:
     ;
 
 %%
+
+int main(int argc,char **argv) {
+  yyparse();
+}
+
+yyerror(char *s) {
+  fprintf(stderr, "error: %s\n", s);
+}

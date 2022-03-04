@@ -10,9 +10,10 @@ IS          ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 
 %{
 #include <stdio.h>
+#include "cmm.tab.h"
 void comment(void);
 // #include "y.tab.h"
-
+/*
 enum TokenType {
 	INT = 258,
 	FLOAT,
@@ -45,7 +46,7 @@ enum TokenType {
 	STRING_LITERAL,
 
 };
-
+*/
 %}
 
 %%
@@ -111,30 +112,3 @@ void comment(void)
 	printf("unterminated comment");
 }
 
-int main(int argc, char** argv) {
-  if (argc < 2) {
-      //read from stdin
-      yylineno = 1;
-      int re = yylex();
-      printf("%d\n", re);
-  } else {
-    for(int i=1;i<argc;i++) {
-      FILE *f = fopen(argv[i], "r");
-      if (!f) {
-          printf("error to read file %s\n", argv[i]);
-          return 1;
-      }
-      yyrestart(f);
-      yylineno = 1;
-      yylex();
-      fclose(f);
-    }
-  }
-
-	/* int tok; */
-	
-	/* while ((tok = yylex()) != 0) { */
-	/* 	// printf("%d\n", tok); */
-	/* 	printf("%s\n", yytext); */
-	/* } */
-}
