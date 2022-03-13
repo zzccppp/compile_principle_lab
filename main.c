@@ -2,6 +2,8 @@
 #include "cmm.tab.h"
 #include <stdio.h>
 
+extern pASTNode root;
+
 unsigned int lexError = 0;
 unsigned int synError = 0;
 
@@ -21,7 +23,7 @@ int main(int argc, char **argv) {
   yyrestart(f);
   yyparse();
   if (!lexError && !synError) {
-    printf("Should Print Tree Info");
+    printASTTree(root, 0);
   }
   return 0;
 }

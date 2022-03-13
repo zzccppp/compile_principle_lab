@@ -24,49 +24,50 @@ int yycolumn = 1;
 %}
 
 %%
+\n|\r { yycolumn = 1; }
 "/*"			{ comment(); }
 "//"[^\n]*              {  }
 
-0[xX]{H}+{IS}?		{ yylval.node = 0; return INT; }
-0[0-7]*{IS}?		{ return INT; }
-[1-9]{D}*{IS}?		{ return INT; }
+0[xX]{H}+{IS}?		{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
+0[0-7]*{IS}?		{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
+[1-9]{D}*{IS}?		{ yylval.node = newTokenNode(yylineno, yylloc.first_column , yylloc.last_column , tokINT, "INT", yytext); return INT; }
 
-{D}+{E}{FS}?		{ return FLOAT; }
-{D}*"."{D}+{E}?{FS}?	{ return FLOAT; }
-{D}+"."{D}*{E}?{FS}?	{ return FLOAT; }
+{D}+{E}{FS}?		{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokFLOAT, "FLOAT", yytext); return FLOAT; }
+{D}*"."{D}+{E}?{FS}?	{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokFLOAT, "FLOAT", yytext); return FLOAT; }
+{D}+"."{D}*{E}?{FS}?	{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokFLOAT, "FLOAT", yytext); return FLOAT; }
 
-"struct" { return STRUCT; }
-"return" { return RETURN; }
-"if" { return IF; }
-"else" { return ELSE; }
-"while" { return WHILE; }
-("int"|"float") { return TYPE; }
+"struct" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "STRUCT", yytext); return STRUCT; }
+"return" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "RETURN", yytext); return RETURN; }
+"if" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "IF", yytext); return IF; }
+"else" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "ELSE", yytext); return ELSE; }
+"while" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "WHILE", yytext); return WHILE; }
 
-{L}({L}|{D})*		{ return ID; }
+("int"|"float") { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokTYPE, "TYPE", yytext); return TYPE; }
+
+{L}({L}|{D})*		{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokID, "ID", yytext); return ID; }
 
 L?\"(\\.|[^\\"\n])*\"	{ return STRING_LITERAL; }
 
-";" { return SEMI; }
-","	{ return COMMA; }
-"=" { return ASSIGNOP; }
-("<"|">"|"<="|">="|"=="|"!=") { return ASSIGNOP; }
-"+" { return PLUS; }
-"-" { return MINUS; }
-"*" { return STAR; }
-"/" { return DIV; }
-"&&" { return AND; }
-"||" { return OR; }
-"." { return DOT; }
-"!" { return NOT; }
+";" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "SEMI", yytext); return SEMI; }
+","	{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "COMMA", yytext); return COMMA; }
+"=" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "ASSIGNOP", yytext); return ASSIGNOP; }
+("<"|">"|"<="|">="|"=="|"!=") { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "RELOP", yytext); return RELOP; }
+"+" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "PLUS", yytext); return PLUS; }
+"-" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "MINUS", yytext); return MINUS; }
+"*" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "STAR", yytext); return STAR; }
+"/" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "DIV", yytext); return DIV; }
+"&&" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "AND", yytext); return AND; }
+"||" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "OR", yytext); return OR; }
+"." { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "DOT", yytext); return DOT; }
+"!" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "NOT", yytext); return NOT; }
 
-"(" { return LP; }
-")" { return RP; }
-"[" { return LB; }
-"]" { return RB; }
-"{" { return LC; }
-"}" { return RC; }
+"(" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "LP", yytext); return LP; }
+")" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "RP", yytext); return RP; }
+"[" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "LB", yytext); return LB; }
+"]" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "RB", yytext); return RB; }
+"{" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "LC", yytext); return LC; }
+"}" { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "RC", yytext); return RC; }
 
-[ \n\r ] { yycolumn = 1; }
 [ \t\v\n\f ] {  }
 
 . { printf("Illegal character: %c\n", yytext[0]); }

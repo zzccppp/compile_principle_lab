@@ -32,89 +32,91 @@ pASTNode root;
 %%
 
 Program:
-       ExtDefList { }
+       ExtDefList { $$ = newInternalNode(@$.first_line, "Program", 1, $1); root = $$; }
        ;
 
 ExtDefList:
-          %empty
-          | ExtDef ExtDefList
+          %empty { $$ = 0; }
+          | ExtDef ExtDefList { $$ = newInternalNode(@$.first_line, "ExtDefList", 2, $1, $2); }
           ;
 
 ExtDef: 
-      Specifier ExtDecList SEMI
-      | Specifier SEMI
-      | Specifier FunDec CompSt
+      Specifier ExtDecList SEMI { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
+      | Specifier SEMI  { $$ = newInternalNode(@$.first_line, "ExtDef", 2, $1, $2); }
+      | Specifier FunDec CompSt  { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
       ;
 
 ExtDecList:
-          VarDec
-          | VarDec COMMA ExtDecList
+          VarDec  { $$ = newInternalNode(@$.first_line, "ExtDecList", 1, $1); }
+          | VarDec COMMA ExtDecList  { $$ = newInternalNode(@$.first_line, "ExtDecList", 3, $1, $2, $3); }
           ;
 
 Specifier:
-         TYPE
-         | StructSpecifier
+         TYPE  { $$ = newInternalNode(@$.first_line, "Specifier", 1, $1); }
+         | StructSpecifier  { $$ = newInternalNode(@$.first_line, "Specifier", 1, $1); }
          ;
 
 StructSpecifier:
-               STRUCT OptTag LC DefList RC
-               | STRUCT Tag
+               STRUCT OptTag LC DefList RC  { $$ = newInternalNode(@$.first_line, "StructSpecifier", 5, $1, $2, $3, $4, $5); }
+               | STRUCT Tag  { $$ = newInternalNode(@$.first_line, "StructSpecifier", 2, $1, $2); }
                ;
 
-OptTag: %empty
-      | ID
+OptTag: %empty { $$ = 0; }
+      | ID  { $$ = newInternalNode(@$.first_line, "OptTag", 1, $1); }
       ;
 
-Tag: ID;
+Tag: ID  { $$ = newInternalNode(@$.first_line, "Tag", 1, $1); }
+   ;
 
-VarDec: ID
-      | VarDec LB INT RB
+VarDec: ID  { $$ = newInternalNode(@$.first_line, "VarDec", 1, $1); }
+      | VarDec LB INT RB  { $$ = newInternalNode(@$.first_line, "VarDec", 4, $1, $2, $3, $4); }
       ;
 
-FunDec: ID LP VarList RP
-      | ID LP RP 
+FunDec: ID LP VarList RP { $$ = newInternalNode(@$.first_line, "FunDec", 4, $1, $2, $3, $4); }
+      | ID LP RP { $$ = newInternalNode(@$.first_line, "FunDec", 3, $1, $2, $3); }
       ;
 
 VarList:
-       ParamDec COMMA VarList
-       | ParamDec
+       ParamDec COMMA VarList  { $$ = newInternalNode(@$.first_line, "VarList", 3, $1, $2, $3); }
+       | ParamDec  { $$ = newInternalNode(@$.first_line, "VarList", 1, $1); }
        ;
 
 ParamDec:
-        Specifier VarDec
+        Specifier VarDec  { $$ = newInternalNode(@$.first_line, "ParamDec", 2, $1, $2); }
         ;
 
 CompSt:
-      LC DefList StmtList RC
+      LC DefList StmtList RC  { $$ = newInternalNode(@$.first_line, "CompSt", 4, $1, $2, $3, $4); }
       ;
 
 StmtList:
-        %empty
-        | Stmt StmtList;
+        %empty { $$ = 0; }
+        | Stmt StmtList  { $$ = newInternalNode(@$.first_line, "StmtList", 2, $1, $2); }
+        ;
 
-Stmt: Exp SEMI
-    | CompSt
-    | RETURN Exp SEMI
-    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {}
-    | IF LP Exp RP Stmt ELSE Stmt
-    | WHILE LP Exp RP Stmt
+Stmt: Exp SEMI  { $$ = newInternalNode(@$.first_line, "Stmt", 2, $1, $2); }
+    | CompSt  { $$ = newInternalNode(@$.first_line, "Stmt", 1, $1); }
+    | RETURN Exp SEMI  { $$ = newInternalNode(@$.first_line, "Stmt", 3, $1, $2, $3); }
+    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
+    | IF LP Exp RP Stmt ELSE Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 6, $1, $2, $3, $4, $5, $6); }
+    | WHILE LP Exp RP Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
     ;
 
 
 DefList:
-       %empty
-       | Def DefList
+       %empty { $$ = 0; }
+       | Def DefList  { $$ = newInternalNode(@$.first_line, "DefList", 2, $1, $2); }
        ;
 
-Def: Specifier DecList SEMI
+Def: Specifier DecList SEMI  { $$ = newInternalNode(@$.first_line, "Def", 3, $1, $2, $3); }
    ;
 
-DecList: Dec
-       | Dec COMMA DecList
+DecList: Dec  { $$ = newInternalNode(@$.first_line, "DecList", 1, $1); }
+       | Dec COMMA DecList  { $$ = newInternalNode(@$.first_line, "DecList", 3, $1, $2, $3); }
        ;
 
-Dec: VarDec
-   | VarDec ASSIGNOP AssignmentExp
+Dec: VarDec  { $$ = newInternalNode(@$.first_line, "Dec", 1, $1); }
+   | VarDec ASSIGNOP AssignmentExp  { $$ = newInternalNode(@$.first_line, "Dec", 3, $1, $2, $3); }
    ;
 
 /* Exp: */
@@ -139,72 +141,72 @@ Dec: VarDec
 /*    ; */
 
 PrimaryExp:
-          ID 
-          | INT
-          | FLOAT
-          | STRING_LITERAL
-          | LP Exp RP 
+          ID   { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
+          | INT  { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
+          | FLOAT  { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
+          | STRING_LITERAL  { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
+          | LP Exp RP   { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
           ;
 
 PostfixExp:
-          PrimaryExp
-          | PostfixExp LB Exp RB
-          | PostfixExp LP RP
-          | PostfixExp DOT ID 
-          | PostfixExp LP Args RP
+          PrimaryExp  { $$ = newInternalNode(@$.first_line, "PostfixExp", 1, $1); }
+          | PostfixExp LB Exp RB  { $$ = newInternalNode(@$.first_line, "PostfixExp", 4, $1, $2, $3, $4); }
+          | PostfixExp LP RP  { $$ = newInternalNode(@$.first_line, "PostfixExp", 3, $1, $2, $3); }
+          | PostfixExp DOT ID   { $$ = newInternalNode(@$.first_line, "PostfixExp", 3, $1, $2, $3); }
+          | PostfixExp LP Args RP  { $$ = newInternalNode(@$.first_line, "PostfixExp", 4, $1, $2, $3, $4); }
           ; 
 
 UnaryExp:
-        PostfixExp
-        | UnaryOp UnaryExp
+        PostfixExp  { $$ = newInternalNode(@$.first_line, "UnaryExp", 1, $1); }
+        | UnaryOp UnaryExp  { $$ = newInternalNode(@$.first_line, "UnaryExp", 2, $1, $2); }
         ;
 
 UnaryOp:
-       MINUS
-       | NOT
+       MINUS  { $$ = newInternalNode(@$.first_line, "UnaryOp", 1, $1); }
+       | NOT  { $$ = newInternalNode(@$.first_line, "UnaryOp", 1, $1); }
        ;
 
 MultiplicativeExp:
-                 UnaryExp
-                 | MultiplicativeExp STAR UnaryExp
-                 | MultiplicativeExp DIV UnaryExp
+                 UnaryExp  { $$ = newInternalNode(@$.first_line, "MultiplicativeExp", 1, $1); }
+                 | MultiplicativeExp STAR UnaryExp  { $$ = newInternalNode(@$.first_line, "MultiplicativeExp", 3, $1, $2, $3); }
+                 | MultiplicativeExp DIV UnaryExp  { $$ = newInternalNode(@$.first_line, "MultiplicativeExp", 3, $1, $2, $3); }
                  ;
 
 AdditiveExp:
-           MultiplicativeExp
-           | AdditiveExp PLUS MultiplicativeExp
-           | AdditiveExp MINUS MultiplicativeExp
+           MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "AdditiveExp", 1, $1); }
+           | AdditiveExp PLUS MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "AdditiveExp", 3, $1, $2, $3); }
+           | AdditiveExp MINUS MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "AdditiveExp", 3, $1, $2, $3); }
            ;
 
 RelationalExp:
-             AdditiveExp
-             | RelationalExp RELOP AdditiveExp
+             AdditiveExp  { $$ = newInternalNode(@$.first_line, "RelationalExp", 1, $1); }
+             | RelationalExp RELOP AdditiveExp  { $$ = newInternalNode(@$.first_line, "RelationalExp", 3, $1, $2, $3); }
              ;
 
 AndExp:
-      RelationalExp
-      | AndExp AND RelationalExp
+      RelationalExp  { $$ = newInternalNode(@$.first_line, "AndExp", 1, $1); }
+      | AndExp AND RelationalExp  { $$ = newInternalNode(@$.first_line, "AndExp", 3, $1, $2, $3); }
       ;
 
 OrExp:
-     AndExp
-     | OrExp OR AndExp
+     AndExp  { $$ = newInternalNode(@$.first_line, "OrExp", 1, $1); }
+     | OrExp OR AndExp  { $$ = newInternalNode(@$.first_line, "OrExp", 3, $1, $2, $3); }
      ;
 
 
 AssignmentExp:
-             OrExp
-             | PostfixExp ASSIGNOP AssignmentExp
+             OrExp  { $$ = newInternalNode(@$.first_line, "AssignmentExp", 1, $1); }
+             | PostfixExp ASSIGNOP AssignmentExp  { $$ = newInternalNode(@$.first_line, "AssignmentExp", 3, $1, $2, $3); }
              ;
 
 Exp:
-   AssignmentExp
-   | Exp COMMA AssignmentExp
+   AssignmentExp  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
+   | Exp COMMA AssignmentExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
    ;
 
 Args:
-    AssignmentExp
-    | Args COMMA AssignmentExp
+    AssignmentExp  { $$ = newInternalNode(@$.first_line, "Args", 1, $1); }
+    | Args COMMA AssignmentExp  { $$ = newInternalNode(@$.first_line, "Args", 3, $1, $2, $3); }
     ;
 
 %%
