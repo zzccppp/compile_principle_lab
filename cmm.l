@@ -10,50 +10,24 @@ IS          ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 
 %{
 #include <stdio.h>
+#include "ast.h"
 #include "cmm.tab.h"
 void comment(void);
-// #include "y.tab.h"
-/*
-enum TokenType {
-	INT = 258,
-	FLOAT,
-	ID,
-	SEMI,
-	COMMA,
-	ASSIGNOP,
-	RELOP,
-	PLUS,
-	MINUS,
-	STAR,
-	DIV,
-	AND,
-	OR,
-	DOT,
-	NOT,
-	TYPE,
-	LP,
-	RP,
-	LB,
-	RB,
-	LC,
-	RC,
-	STRUCT,
-	RETURN,
-	IF,
-	ELSE,
-	WHILE,
 
-	STRING_LITERAL,
+int yycolumn = 1;
+#define YY_USER_ACTION \
+    yylloc.first_line=yylloc.last_line=yylineno; \
+    yylloc.first_column=yycolumn; \
+    yylloc.last_column=yycolumn+yyleng-1; \
+    yycolumn+=yyleng;
 
-};
-*/
 %}
 
 %%
 "/*"			{ comment(); }
 "//"[^\n]*              {  }
 
-0[xX]{H}+{IS}?		{ printf("NUMBER\n"); return INT; }
+0[xX]{H}+{IS}?		{ yylval.node = 0; return INT; }
 0[0-7]*{IS}?		{ return INT; }
 [1-9]{D}*{IS}?		{ return INT; }
 
@@ -92,8 +66,8 @@ L?\"(\\.|[^\\"\n])*\"	{ return STRING_LITERAL; }
 "{" { return LC; }
 "}" { return RC; }
 
-
-[ \t\v\n\f] {  }
+[ \n\r ] { yycolumn = 1; }
+[ \t\v\n\f ] {  }
 
 . { printf("Illegal character: %c\n", yytext[0]); }
 

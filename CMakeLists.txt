@@ -18,4 +18,4 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(lab1 lex.yy.c cmm.tab.c)
+add_executable(lab1 lex.yy.c cmm.tab.c main.c)

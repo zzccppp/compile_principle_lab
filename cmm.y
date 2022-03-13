@@ -1,20 +1,38 @@
 %{
 #include <stdio.h>
+#include "ast.h"
+extern int synError;
+
+pASTNode root;
 %}
 
-%token ID INT FLOAT STRING_LITERAL
-%token SEMI COMMA ASSIGNOP RELOP
-%token PLUS MINUS STAR DIV AND OR DOT NOT
-%token TYPE LP RP LB RB LC RC
-%token STRUCT RETURN IF ELSE WHILE
+%union {
+  pASTNode node;
+}
+
+%token <node> ID INT FLOAT STRING_LITERAL
+%token <node> SEMI COMMA ASSIGNOP RELOP
+%token <node> PLUS MINUS STAR DIV AND OR DOT NOT
+%token <node> TYPE LP RP LB RB LC RC
+%token <node> STRUCT RETURN IF ELSE WHILE
+
+%type <node> Program ExtDefList ExtDef ExtDecList   //  High-level Definitions
+%type <node> Specifier StructSpecifier OptTag Tag   //  Specifiers
+%type <node> VarDec FunDec VarList ParamDec         //  Declarators
+%type <node> CompSt StmtList Stmt                   //  Statements
+%type <node> DefList Def Dec DecList                //  Local Definitions
+%type <node> PrimaryExp PostfixExp UnaryExp UnaryOp MultiplicativeExp AdditiveExp RelationalExp AndExp OrExp AssignmentExp //specfic expressions
+%type <node> Exp Args                               //  Expressions
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 
+%locations
+
 %%
 
 Program:
-       ExtDefList
+       ExtDefList { }
        ;
 
 ExtDefList:
@@ -77,7 +95,7 @@ StmtList:
 Stmt: Exp SEMI
     | CompSt
     | RETURN Exp SEMI
-    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE;
+    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {}
     | IF LP Exp RP Stmt ELSE Stmt
     | WHILE LP Exp RP Stmt
     ;
@@ -190,10 +208,6 @@ Args:
     ;
 
 %%
-
-main(int argc,char **argv) {
-  yyparse();
-}
 
 yyerror(char *s) {
   fprintf(stderr, "error: %s\n", s);
