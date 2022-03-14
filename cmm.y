@@ -1,7 +1,10 @@
 %{
 #include <stdio.h>
 #include "ast.h"
+#include "lex.yy.h"
 extern int synError;
+
+int yyerror(char*);
 
 pASTNode root;
 %}
@@ -211,6 +214,7 @@ Args:
 
 %%
 
-yyerror(char *s) {
+int yyerror(char *s) {
   fprintf(stderr, "error: %s\n", s);
+  return 0;
 }

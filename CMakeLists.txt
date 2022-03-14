@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_custom_command(
   OUTPUT ../lex.yy.c
-  COMMAND flex cmm.l
+  COMMAND flex --header=lex.yy.h cmm.l
   DEPENDS cmm.l
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )

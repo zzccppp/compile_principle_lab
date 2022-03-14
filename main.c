@@ -1,6 +1,7 @@
 #include "ast.h"
 #include "cmm.tab.h"
 #include <stdio.h>
+#include "lex.yy.h"
 
 extern pASTNode root;
 
