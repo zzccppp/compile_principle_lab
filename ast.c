@@ -2,7 +2,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-
 pASTNode newTokenNode(int lineNum, int startColumn, int endColumn,
                       NodeType type, char *tokName, char *tokText) {
   /* printf("%s lineNum: %d,column: (%d,%d)\n", tokName, lineNum, startColumn,
@@ -72,9 +71,22 @@ void printASTTree(pASTNode node, int depth) {
   } else if (node->type == tokTYPE) {
     printf("%s: %s\n", node->name, node->val);
   } else if (node->type == tokINT) {
-    printf("%s: %s\n", node->name, node->val);
+    size_t len = strlen(node->val);
+    int x;
+    if (node->val[0] == '0') {
+      if (len > 2 && (node->val[1] == 'x' || node->val[1] == 'X')) {
+        sscanf(node->val, "%x", &x);
+      } else {
+        sscanf(node->val, "%o", &x);
+      }
+    } else {
+      sscanf(node->val, "%d", &x);
+    }
+    printf("%s: %d\n", node->name, x);
   } else if (node->type == tokFLOAT) {
-    printf("%s: %s\n", node->name, node->val);
+    float x;
+    sscanf(node->val, "%f", &x);
+    printf("%s: %f\n", node->name, x);
   } else if (isTokenNode(node)) {
     printf("%s\n", node->name);
   } else {

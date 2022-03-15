@@ -73,6 +73,8 @@ L?\"(\\.|[^\\"\n])*\"	{ return STRING_LITERAL; }
 
 [ \t\v\n\f ] {  }
 
+0[xX][0-9a-zA-Z]*  {lexError = 1; printf("Error type A at Line %d: Illegal Hex Number \"%s\".\n", yylineno, yytext); }
+0[0-9]+  {lexError = 1; printf("Error type A at Line %d: Illegal Octal Number \"%s\".\n", yylineno, yytext); }
 {D}+{ID} {lexError = 1; printf("Error type A at Line %d: Illegal ID \"%s\".\n", yylineno, yytext); }
 "."{D}+ { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 {D}+"." { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }

@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include "ast.h"
 #include "lex.yy.h"
+#define YYERROR_VERBOSE 1
 extern int synError;
 
 int yyerror(char*);
-
+void printErrorMsg(char type, int lineno, char* msg);
 pASTNode root;
 %}
 
@@ -47,6 +48,7 @@ ExtDef:
       Specifier ExtDecList SEMI { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
       | Specifier SEMI  { $$ = newInternalNode(@$.first_line, "ExtDef", 2, $1, $2); }
       | Specifier FunDec CompSt  { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
+      | error SEMI { synError = 1; printErrorMsg('B', @1.first_line, "missing ;"); }
       ;
 
 ExtDecList:
@@ -73,6 +75,7 @@ Tag: ID  { $$ = newInternalNode(@$.first_line, "Tag", 1, $1); }
 
 VarDec: ID  { $$ = newInternalNode(@$.first_line, "VarDec", 1, $1); }
       | VarDec LB INT RB  { $$ = newInternalNode(@$.first_line, "VarDec", 4, $1, $2, $3, $4); }
+      /* | error RB { synError = 1; printErrorMsg('B', @1.first_line, "[][][][]"); } */
       ;
 
 FunDec: ID LP VarList RP { $$ = newInternalNode(@$.first_line, "FunDec", 4, $1, $2, $3, $4); }
@@ -103,6 +106,7 @@ Stmt: Exp SEMI  { $$ = newInternalNode(@$.first_line, "Stmt", 2, $1, $2); }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
     | IF LP Exp RP Stmt ELSE Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 6, $1, $2, $3, $4, $5, $6); }
     | WHILE LP Exp RP Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
+    | error SEMI { synError = 1; printErrorMsg('B', @1.first_line, "missing ;"); }
     ;
 
 
@@ -154,10 +158,11 @@ PrimaryExp:
 PostfixExp:
           /* PrimaryExp  { $$ = newInternalNode(@$.first_line, "PostfixExp", 1, $1); } */
           PrimaryExp  { $$ = $1; }
-          | PostfixExp LB Exp RB  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
+          | PostfixExp LB AssignmentExp RB  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
           | PostfixExp LP RP  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
           | PostfixExp DOT ID   { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
           | PostfixExp LP Args RP  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
+          | PostfixExp LB error RB { synError = 1; printErrorMsg('B', @3.first_line, "error in []");}
           ; 
 
 UnaryExp:
@@ -226,6 +231,10 @@ Args:
 %%
 
 int yyerror(char *s) {
-  fprintf(stderr, "error: %s\n", s);
+  fprintf(stderr, "Error type B at line %d: %s.\n", yylineno, s);
   return 0;
+}
+
+void printErrorMsg(char type, int lineno, char* msg) {
+  fprintf(stderr, "Error type %c at line %d: %s.\n", type,lineno,msg);
 }
