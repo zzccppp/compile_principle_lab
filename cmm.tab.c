@@ -1557,31 +1557,31 @@ yyreduce:
 
   case 40: /* PrimaryExp: ID  */
 #line 147 "cmm.y"
-               { (yyval.node) = newInternalNode((yyloc).first_line, "PrimaryExp", 1, (yyvsp[0].node)); }
+               { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 1, (yyvsp[0].node)); }
 #line 1562 "cmm.tab.c"
     break;
 
   case 41: /* PrimaryExp: INT  */
 #line 148 "cmm.y"
-                 { (yyval.node) = newInternalNode((yyloc).first_line, "PrimaryExp", 1, (yyvsp[0].node)); }
+                 { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 1, (yyvsp[0].node)); }
 #line 1568 "cmm.tab.c"
     break;
 
   case 42: /* PrimaryExp: FLOAT  */
 #line 149 "cmm.y"
-                   { (yyval.node) = newInternalNode((yyloc).first_line, "PrimaryExp", 1, (yyvsp[0].node)); }
+                   { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 1, (yyvsp[0].node)); }
 #line 1574 "cmm.tab.c"
     break;
 
   case 43: /* PrimaryExp: STRING_LITERAL  */
 #line 150 "cmm.y"
-                            { (yyval.node) = newInternalNode((yyloc).first_line, "PrimaryExp", 1, (yyvsp[0].node)); }
+                            { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 1, (yyvsp[0].node)); }
 #line 1580 "cmm.tab.c"
     break;
 
   case 44: /* PrimaryExp: LP Exp RP  */
 #line 151 "cmm.y"
-                        { (yyval.node) = newInternalNode((yyloc).first_line, "PrimaryExp", 3, (yyvsp[-2].node)); }
+                        { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node)); }
 #line 1586 "cmm.tab.c"
     break;
 
@@ -1593,25 +1593,25 @@ yyreduce:
 
   case 46: /* PostfixExp: PostfixExp LB Exp RB  */
 #line 157 "cmm.y"
-                                  { (yyval.node) = newInternalNode((yyloc).first_line, "PostfixExp", 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                  { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1598 "cmm.tab.c"
     break;
 
   case 47: /* PostfixExp: PostfixExp LP RP  */
 #line 158 "cmm.y"
-                              { (yyval.node) = newInternalNode((yyloc).first_line, "PostfixExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                              { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1604 "cmm.tab.c"
     break;
 
   case 48: /* PostfixExp: PostfixExp DOT ID  */
 #line 159 "cmm.y"
-                                { (yyval.node) = newInternalNode((yyloc).first_line, "PostfixExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1610 "cmm.tab.c"
     break;
 
   case 49: /* PostfixExp: PostfixExp LP Args RP  */
 #line 160 "cmm.y"
-                                   { (yyval.node) = newInternalNode((yyloc).first_line, "PostfixExp", 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                   { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1616 "cmm.tab.c"
     break;
 
@@ -1623,7 +1623,7 @@ yyreduce:
 
   case 51: /* UnaryExp: UnaryOp UnaryExp  */
 #line 166 "cmm.y"
-                            { (yyval.node) = newInternalNode((yyloc).first_line, "UnaryExp", 2, (yyvsp[-1].node), (yyvsp[0].node)); }
+                            { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 2, (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1628 "cmm.tab.c"
     break;
 
@@ -1647,13 +1647,13 @@ yyreduce:
 
   case 55: /* MultiplicativeExp: MultiplicativeExp STAR UnaryExp  */
 #line 179 "cmm.y"
-                                                    { (yyval.node) = newInternalNode((yyloc).first_line, "MultiplicativeExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                                    { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1652 "cmm.tab.c"
     break;
 
   case 56: /* MultiplicativeExp: MultiplicativeExp DIV UnaryExp  */
 #line 180 "cmm.y"
-                                                   { (yyval.node) = newInternalNode((yyloc).first_line, "MultiplicativeExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                                   { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1658 "cmm.tab.c"
     break;
 
@@ -1665,13 +1665,13 @@ yyreduce:
 
   case 58: /* AdditiveExp: AdditiveExp PLUS MultiplicativeExp  */
 #line 186 "cmm.y"
-                                                 { (yyval.node) = newInternalNode((yyloc).first_line, "AdditiveExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                                 { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1670 "cmm.tab.c"
     break;
 
   case 59: /* AdditiveExp: AdditiveExp MINUS MultiplicativeExp  */
 #line 187 "cmm.y"
-                                                  { (yyval.node) = newInternalNode((yyloc).first_line, "AdditiveExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                                  { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1676 "cmm.tab.c"
     break;
 
@@ -1683,7 +1683,7 @@ yyreduce:
 
   case 61: /* RelationalExp: RelationalExp RELOP AdditiveExp  */
 #line 193 "cmm.y"
-                                                { (yyval.node) = newInternalNode((yyloc).first_line, "RelationalExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                                { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1688 "cmm.tab.c"
     break;
 
@@ -1695,7 +1695,7 @@ yyreduce:
 
   case 63: /* AndExp: AndExp AND RelationalExp  */
 #line 199 "cmm.y"
-                                  { (yyval.node) = newInternalNode((yyloc).first_line, "AndExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                  { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1700 "cmm.tab.c"
     break;
 
@@ -1707,7 +1707,7 @@ yyreduce:
 
   case 65: /* OrExp: OrExp OR AndExp  */
 #line 205 "cmm.y"
-                        { (yyval.node) = newInternalNode((yyloc).first_line, "OrExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                        { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1712 "cmm.tab.c"
     break;
 
@@ -1719,7 +1719,7 @@ yyreduce:
 
   case 67: /* AssignmentExp: PostfixExp ASSIGNOP AssignmentExp  */
 #line 212 "cmm.y"
-                                                  { (yyval.node) = newInternalNode((yyloc).first_line, "AssignmentExp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
+                                                  { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1724 "cmm.tab.c"
     break;
 

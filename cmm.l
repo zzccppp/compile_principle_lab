@@ -5,6 +5,7 @@ E			([Ee][+-]?{D}+)
 P           ([Pp][+-]?{D}+)
 FS			(f|F|l|L)
 IS          ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
+ID {L}({L}|{D})*
 
 %option noyywrap nodefault yylineno
 
@@ -13,6 +14,8 @@ IS          ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 #include "ast.h"
 #include "cmm.tab.h"
 void comment(void);
+
+extern unsigned int lexError;
 
 int yycolumn = 1;
 #define YY_USER_ACTION \
@@ -70,7 +73,14 @@ L?\"(\\.|[^\\"\n])*\"	{ return STRING_LITERAL; }
 
 [ \t\v\n\f ] {  }
 
-. { printf("Illegal character: %c\n", yytext[0]); }
+{D}+{ID} {lexError = 1; printf("Error type A at Line %d: Illegal ID \"%s\".\n", yylineno, yytext); }
+"."{D}+ { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
+{D}+"." { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
+{D}*"."{D}+[eE] { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
+{D}+"."{D}*[eE] { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
+{D}+[eE][+-]?{D}* { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
+"."[eE][+-]?{D}+ { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
+. { lexError = 1; printf("Error type A at Line %d: Mysterious character \'%s\'.\n", yylineno, yytext); }
 
 %%
 

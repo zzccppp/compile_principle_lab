@@ -144,26 +144,26 @@ Dec: VarDec  { $$ = newInternalNode(@$.first_line, "Dec", 1, $1); }
 /*    ; */
 
 PrimaryExp:
-          ID   { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
-          | INT  { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
-          | FLOAT  { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
-          | STRING_LITERAL  { $$ = newInternalNode(@$.first_line, "PrimaryExp", 1, $1); }
-          | LP Exp RP   { $$ = newInternalNode(@$.first_line, "PrimaryExp", 3, $1); }
+          ID   { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
+          | INT  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
+          | FLOAT  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
+          | STRING_LITERAL  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
+          | LP Exp RP   { $$ = newInternalNode(@$.first_line, "Exp", 3, $1); }
           ;
 
 PostfixExp:
           /* PrimaryExp  { $$ = newInternalNode(@$.first_line, "PostfixExp", 1, $1); } */
           PrimaryExp  { $$ = $1; }
-          | PostfixExp LB Exp RB  { $$ = newInternalNode(@$.first_line, "PostfixExp", 4, $1, $2, $3, $4); }
-          | PostfixExp LP RP  { $$ = newInternalNode(@$.first_line, "PostfixExp", 3, $1, $2, $3); }
-          | PostfixExp DOT ID   { $$ = newInternalNode(@$.first_line, "PostfixExp", 3, $1, $2, $3); }
-          | PostfixExp LP Args RP  { $$ = newInternalNode(@$.first_line, "PostfixExp", 4, $1, $2, $3, $4); }
+          | PostfixExp LB Exp RB  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
+          | PostfixExp LP RP  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
+          | PostfixExp DOT ID   { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
+          | PostfixExp LP Args RP  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
           ; 
 
 UnaryExp:
         /* PostfixExp  { $$ = newInternalNode(@$.first_line, "UnaryExp", 1, $1); } */
         PostfixExp  { $$ = $1; }
-        | UnaryOp UnaryExp  { $$ = newInternalNode(@$.first_line, "UnaryExp", 2, $1, $2); }
+        | UnaryOp UnaryExp  { $$ = newInternalNode(@$.first_line, "Exp", 2, $1, $2); }
         ;
 
 UnaryOp:
@@ -176,40 +176,40 @@ UnaryOp:
 MultiplicativeExp:
                  /* UnaryExp  { $$ = newInternalNode(@$.first_line, "MultiplicativeExp", 1, $1); } */
                  UnaryExp  { $$ = $1; }
-                 | MultiplicativeExp STAR UnaryExp  { $$ = newInternalNode(@$.first_line, "MultiplicativeExp", 3, $1, $2, $3); }
-                 | MultiplicativeExp DIV UnaryExp  { $$ = newInternalNode(@$.first_line, "MultiplicativeExp", 3, $1, $2, $3); }
+                 | MultiplicativeExp STAR UnaryExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
+                 | MultiplicativeExp DIV UnaryExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
                  ;
 
 AdditiveExp:
            /* MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "AdditiveExp", 1, $1); } */
            MultiplicativeExp  { $$ = $1; }
-           | AdditiveExp PLUS MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "AdditiveExp", 3, $1, $2, $3); }
-           | AdditiveExp MINUS MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "AdditiveExp", 3, $1, $2, $3); }
+           | AdditiveExp PLUS MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
+           | AdditiveExp MINUS MultiplicativeExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
            ;
 
 RelationalExp:
              /* AdditiveExp  { $$ = newInternalNode(@$.first_line, "RelationalExp", 1, $1); } */
              AdditiveExp  { $$ = $1; }
-             | RelationalExp RELOP AdditiveExp  { $$ = newInternalNode(@$.first_line, "RelationalExp", 3, $1, $2, $3); }
+             | RelationalExp RELOP AdditiveExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
              ;
 
 AndExp:
       /* RelationalExp  { $$ = newInternalNode(@$.first_line, "AndExp", 1, $1); } */
       RelationalExp  { $$ = $1; }
-      | AndExp AND RelationalExp  { $$ = newInternalNode(@$.first_line, "AndExp", 3, $1, $2, $3); }
+      | AndExp AND RelationalExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
       ;
 
 OrExp:
      /* AndExp  { $$ = newInternalNode(@$.first_line, "OrExp", 1, $1); } */
      AndExp  { $$ = $1; }
-     | OrExp OR AndExp  { $$ = newInternalNode(@$.first_line, "OrExp", 3, $1, $2, $3); }
+     | OrExp OR AndExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
      ;
 
 
 AssignmentExp:
              /* OrExp  { $$ = newInternalNode(@$.first_line, "AssignmentExp", 1, $1); } */
              OrExp  { $$ = $1; }
-             | PostfixExp ASSIGNOP AssignmentExp  { $$ = newInternalNode(@$.first_line, "AssignmentExp", 3, $1, $2, $3); }
+             | PostfixExp ASSIGNOP AssignmentExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
              ;
 
 Exp:
