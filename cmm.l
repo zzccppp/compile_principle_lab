@@ -27,9 +27,10 @@ int yycolumn = 1;
 %}
 
 %%
+
 \n|\r { yycolumn = 1; }
-"/*"			{ comment(); }
 "//"[^\n]*              {  }
+"/*" { comment(); }
 
 0[xX]{H}+{IS}?		{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
 0[0-7]*{IS}?		{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
@@ -89,13 +90,21 @@ L?\"(\\.|[^\\"\n])*\"	{ return STRING_LITERAL; }
 void comment(void)
 {
 	char c, prev = 0;
-  
+  int comment = 1;
 	while ((c = input()) != 0)      /* (EOF maps to 0) */
 	{
-		if (c == '/' && prev == '*')
-			return;
+    if (c == '*' && prev == '/') {
+      comment++;
+    }
+		if (c == '/' && prev == '*'){
+      comment--;
+    }
+    if (comment == 0) {
+      return;
+    }
 		prev = c;
 	}
-	printf("unterminated comment");
+  lexError = 1;
+	printf("Error type A at Line %d: Endless Comment\n", yylineno);
 }
 

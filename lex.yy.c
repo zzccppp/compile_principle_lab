@@ -391,10 +391,10 @@ static yyconst flex_int16_t yy_accept[129] =
        30,   31,   24,   22,   19,   23,   28,   25,    5,    6,
        18,   21,   20,   21,   16,   16,   32,   33,   16,   16,
        16,   16,   16,   16,   34,   46,   35,   21,    0,   17,
-        0,   26,    8,    0,    2,    3,    9,    5,   38,   39,
+        0,   26,    8,    0,    3,    2,    9,    5,   38,   39,
        39,    5,    5,   37,    5,    6,    6,    6,    6,   16,
         0,   16,   16,   12,   16,   16,   16,   16,   27,   42,
-        8,    0,   45,    3,    8,   43,    9,   39,   44,    7,
+        8,    0,   45,    2,    8,   43,    9,   39,   44,    7,
         5,    5,    5,    5,    4,   37,    6,    6,    6,    6,
        16,   16,   15,   16,   16,   16,    0,    8,   42,    8,
 
@@ -801,7 +801,8 @@ YY_DECL
     
 #line 29 "cmm.l"
 
-#line 805 "lex.yy.c"
+
+#line 806 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -897,241 +898,241 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 30 "cmm.l"
+#line 31 "cmm.l"
 { yycolumn = 1; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 31 "cmm.l"
-{ comment(); }
-	YY_BREAK
-case 3:
-YY_RULE_SETUP
 #line 32 "cmm.l"
 {  }
 	YY_BREAK
-case 4:
+case 3:
 YY_RULE_SETUP
-#line 34 "cmm.l"
-{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
+#line 33 "cmm.l"
+{ comment(); }
 	YY_BREAK
-case 5:
+case 4:
 YY_RULE_SETUP
 #line 35 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
 	YY_BREAK
-case 6:
+case 5:
 YY_RULE_SETUP
 #line 36 "cmm.l"
+{ yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column , tokINT, "INT", yytext); return INT; }
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 37 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column , yylloc.last_column , tokINT, "INT", yytext); return INT; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 38 "cmm.l"
+#line 39 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokFLOAT, "FLOAT", yytext); return FLOAT; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 39 "cmm.l"
+#line 40 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokFLOAT, "FLOAT", yytext); return FLOAT; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 40 "cmm.l"
+#line 41 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokFLOAT, "FLOAT", yytext); return FLOAT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 42 "cmm.l"
+#line 43 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "STRUCT", yytext); return STRUCT; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 43 "cmm.l"
+#line 44 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "RETURN", yytext); return RETURN; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 44 "cmm.l"
+#line 45 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "IF", yytext); return IF; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 45 "cmm.l"
+#line 46 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "ELSE", yytext); return ELSE; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 46 "cmm.l"
+#line 47 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokKEYWORD, "WHILE", yytext); return WHILE; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 48 "cmm.l"
+#line 49 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokTYPE, "TYPE", yytext); return TYPE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 50 "cmm.l"
+#line 51 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokID, "ID", yytext); return ID; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 52 "cmm.l"
+#line 53 "cmm.l"
 { return STRING_LITERAL; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 54 "cmm.l"
+#line 55 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "SEMI", yytext); return SEMI; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 55 "cmm.l"
+#line 56 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "COMMA", yytext); return COMMA; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 56 "cmm.l"
+#line 57 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "ASSIGNOP", yytext); return ASSIGNOP; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 57 "cmm.l"
+#line 58 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "RELOP", yytext); return RELOP; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 58 "cmm.l"
+#line 59 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "PLUS", yytext); return PLUS; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 59 "cmm.l"
+#line 60 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "MINUS", yytext); return MINUS; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 60 "cmm.l"
+#line 61 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "STAR", yytext); return STAR; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 61 "cmm.l"
+#line 62 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "DIV", yytext); return DIV; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 62 "cmm.l"
+#line 63 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "AND", yytext); return AND; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 63 "cmm.l"
+#line 64 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "OR", yytext); return OR; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 64 "cmm.l"
+#line 65 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "DOT", yytext); return DOT; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 65 "cmm.l"
+#line 66 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokOP, "NOT", yytext); return NOT; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 67 "cmm.l"
+#line 68 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "LP", yytext); return LP; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 68 "cmm.l"
+#line 69 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "RP", yytext); return RP; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 69 "cmm.l"
+#line 70 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "LB", yytext); return LB; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 70 "cmm.l"
+#line 71 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "RB", yytext); return RB; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 71 "cmm.l"
+#line 72 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "LC", yytext); return LC; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 72 "cmm.l"
+#line 73 "cmm.l"
 { yylval.node = newTokenNode(yylineno, yylloc.first_column, yylloc.last_column, tokPAIR, "RC", yytext); return RC; }
 	YY_BREAK
 case 36:
 /* rule 36 can match eol */
 YY_RULE_SETUP
-#line 74 "cmm.l"
+#line 75 "cmm.l"
 {  }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 76 "cmm.l"
+#line 77 "cmm.l"
 {lexError = 1; printf("Error type A at Line %d: Illegal Hex Number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 77 "cmm.l"
+#line 78 "cmm.l"
 {lexError = 1; printf("Error type A at Line %d: Illegal Octal Number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 78 "cmm.l"
+#line 79 "cmm.l"
 {lexError = 1; printf("Error type A at Line %d: Illegal ID \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 79 "cmm.l"
+#line 80 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 80 "cmm.l"
+#line 81 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 81 "cmm.l"
+#line 82 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 82 "cmm.l"
+#line 83 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 83 "cmm.l"
+#line 84 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 84 "cmm.l"
+#line 85 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Illegal floating point number \"%s\".\n", yylineno, yytext); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 85 "cmm.l"
+#line 86 "cmm.l"
 { lexError = 1; printf("Error type A at Line %d: Mysterious character \'%s\'.\n", yylineno, yytext); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 87 "cmm.l"
+#line 88 "cmm.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1135 "lex.yy.c"
+#line 1136 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2140,21 +2141,29 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 87 "cmm.l"
+#line 88 "cmm.l"
 
 
 
 void comment(void)
 {
 	char c, prev = 0;
-  
+  int comment = 1;
 	while ((c = input()) != 0)      /* (EOF maps to 0) */
 	{
-		if (c == '/' && prev == '*')
-			return;
+    if (c == '*' && prev == '/') {
+      comment++;
+    }
+		if (c == '/' && prev == '*'){
+      comment--;
+    }
+    if (comment == 0) {
+      return;
+    }
 		prev = c;
 	}
-	printf("unterminated comment");
+  lexError = 1;
+	printf("Error type A at Line %d: Endless Comment\n", yylineno);
 }
 
 

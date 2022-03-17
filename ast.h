@@ -36,3 +36,6 @@ pASTNode newInternalNode(int lineNum, char* tokName, int argc, ...);
 int isTokenNode(pASTNode);
 
 void printASTTree(pASTNode node, int depth);
+
+void comment(void);
+
