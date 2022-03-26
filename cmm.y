@@ -48,7 +48,8 @@ ExtDef:
       Specifier ExtDecList SEMI { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
       | Specifier SEMI  { $$ = newInternalNode(@$.first_line, "ExtDef", 2, $1, $2); }
       | Specifier FunDec CompSt  { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
-      | error SEMI { synError = 1; printErrorMsg('B', @1.first_line, "missing ;"); }
+      | Specifier FunDec error { }
+      | Specifier error { synError = 1; printErrorMsg('B', @2.first_line, "missing ; (in Specifier)"); }
       ;
 
 ExtDecList:
@@ -106,7 +107,7 @@ Stmt: Exp SEMI  { $$ = newInternalNode(@$.first_line, "Stmt", 2, $1, $2); }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
     | IF LP Exp RP Stmt ELSE Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 6, $1, $2, $3, $4, $5, $6); }
     | WHILE LP Exp RP Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
-    | error SEMI { synError = 1; printErrorMsg('B', @1.first_line, "missing ;"); }
+    | Exp error { synError = 1; printErrorMsg('B', @2.first_line, "missing ; (in Exp)"); }
     ;
 
 
@@ -116,6 +117,7 @@ DefList:
        ;
 
 Def: Specifier DecList SEMI  { $$ = newInternalNode(@$.first_line, "Def", 3, $1, $2, $3); }
+    | Specifier DecList error { synError = 1; printErrorMsg('B', @3.first_line, "missing ; (in Def)"); }
    ;
 
 DecList: Dec  { $$ = newInternalNode(@$.first_line, "DecList", 1, $1); }
@@ -218,7 +220,6 @@ AssignmentExp:
              ;
 
 Exp:
-   /* AssignmentExp  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); } */
    AssignmentExp  { $$ = $1; }
    | Exp COMMA AssignmentExp  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
    ;
@@ -231,6 +232,7 @@ Args:
 %%
 
 int yyerror(char *s) {
+  synError = 1;
   fprintf(stderr, "Error type B at line %d: %s.\n", yylineno, s);
   return 0;
 }
