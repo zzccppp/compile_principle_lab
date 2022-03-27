@@ -1,7 +1,10 @@
+extern "C" {
 #include "ast.h"
 #include "cmm.tab.h"
-#include <stdio.h>
 #include "lex.yy.h"
+}
+#include "semantic.h"
+#include <iostream>
 
 extern pASTNode root;
 
@@ -25,6 +28,8 @@ int main(int argc, char **argv) {
   yyparse();
   if (!lexError && !synError) {
     printASTTree(root, 0);
+    SymTable t;
+    t.traverseAST(root);
   }
   return 0;
 }

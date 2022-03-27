@@ -48,6 +48,7 @@ ExtDef:
       Specifier ExtDecList SEMI { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
       | Specifier SEMI  { $$ = newInternalNode(@$.first_line, "ExtDef", 2, $1, $2); }
       | Specifier FunDec CompSt  { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
+      | Specifier FunDec SEMI { $$ = newInternalNode(@$.first_line, "ExtDef", 3, $1, $2, $3); }
       | Specifier FunDec error { }
       | Specifier error { synError = 1; printErrorMsg('B', @2.first_line, "missing ; (in Specifier)"); }
       ;
