@@ -2,10 +2,14 @@
 #include "ast.h"
 #include <cstring>
 #include <iostream>
+#include <memory>
 
 bool Type::eq(Type &other) {
   if (this->k != other.k) {
     return false;
+  }
+  if (this->k == Error) {
+    return true;
   }
   if (this->k == Basic) {
     return this->basic == other.basic;
@@ -57,10 +61,44 @@ void SymTable::ExtDef(pASTNode node) {
     }
   } else {
     if (!strcmp(node->child[1]->name, "FunDec")) {
+      auto func = FunDec(node->child[1]);
       if (!strcmp(node->child[2]->name, "SEMI")) {
         // Spec FunDec SEMI
+        bool ret_type_error = (t.k == Kind::Error);
+        if (ret_type_error || func.has_error) {
+          // 忽略有错误的函数声明
+          std::cerr << "Ignore function declarations with errors at Line" << node->child[1]->lineNum << std::endl;
+        } else {
+          // 判断是否有重名的声明
+          auto fd = this->functionTable.find(func.name);
+          Function f;
+          f.fields = func.fields;
+          f.has_body = false;
+          f.name = func.name;
+          f.ret_type = t;
+          if (fd == this->functionTable.end()) {
+            // not found
+            this->functionTable.insert({f.name, f});
+          } else {
+            // 有重名的，判断是否相同
+            if (f.eq(fd->second)) {
+              // 完全相同的声明重复出现
+              std::cerr << "Warning same function declaration\n";
+            } else {
+              std::string msg;
+              msg.append("Conflicting function declarations");
+              printSemanticError(FUNC_MULTI_DEF, node->child[1]->lineNum, msg);
+            }
+          }
+        }
       } else {
         // Spec FunDec CompSt
+        bool ret_type_error = (t.k == Kind::Error);
+        if (ret_type_error || func.has_error) {
+          // 如果定义有错误就不去查重
+          std::cerr << "Ignore function declarations with errors at Line" << node->child[1]->lineNum << std::endl;
+        } else {
+        }
       }
     } else {
       // Spec ExtDecList SEMI
@@ -186,7 +224,6 @@ void SymTable::Def_Struct(pASTNode node, Type *type) {
       } else {
         // VarDec -> VarDec LB INT RB
         std::vector<int> dimesions;
-        std::string name;
         uint32_t size = 1;
         while (vardec->child_count != 1) {
           int dim = getINTValue(vardec->child[2]);
@@ -233,12 +270,128 @@ void SymTable::ExtDecList(pASTNode extdeclist, Type *spec) {
     }
     auto vardec = extdeclist->child[0];
     if (vardec->child_count == 1) {
-      
+      // VarDec -> ID
+      if (!this->isVarNameExists(vardec->child[0]->val)) {
+        Field f;
+        f.name = vardec->child[0]->val;
+        f.type = *spec;
+        this->fieldTableStack.top().insert({f.name, f});
+      } else {
+        std::string msg;
+        msg.append("Conflict name in global variables: ");
+        msg.append(vardec->child[0]->val);
+        printSemanticError(REDEF_VAR, vardec->lineNum, msg);
+      }
     } else {
+      // VarDec -> VarDec LB INT RB
+      std::vector<int> dimesions;
+      uint32_t size = 1;
+      while (vardec->child_count != 1) {
+        int dim = getINTValue(vardec->child[2]);
+        dimesions.push_back(dim);
+        size *= dim;
+        vardec = vardec->child[0];
+      }
+      if (!this->isVarNameExists(vardec->child[0]->val)) {
+        Field f;
+        Type arr_type;
+        arr_type.k = Kind::Array;
+        arr_type.array.dim = dimesions.size();
+        arr_type.array.size = size;
+        arr_type.array.t = std::make_shared<Type>();
+        *(arr_type.array.t) = *spec;
+        f.type = arr_type;
+        f.name = vardec->child[0]->val;
+        this->fieldTableStack.top().insert({f.name, f});
+      } else {
+        std::string msg;
+        msg.append("Conflict array name in global variables: ");
+        msg.append(vardec->child[0]->val);
+        printSemanticError(REDEF_VAR, vardec->lineNum, msg);
+      }
     }
 
     if (flag) {
       extdeclist = extdeclist->child[2];
     }
   }
+}
+
+_FunDecInf SymTable::FunDec(pASTNode node) {
+  /* FunDec: ID LP VarList RP
+        | ID LP RP
+    VarList:
+       ParamDec COMMA VarList
+       | ParamDec
+    ParamDec:
+        Specifier VarDec
+    VarDec: ID
+      | VarDec LB INT RB
+    */
+  std::string name = node->child[0]->val;
+  _FunDecInf func;
+  if (node->child_count == 4) {
+    // process varlist
+    auto varlist = node->child[2];
+    bool flag = true;
+    while (flag) {
+      if (varlist->child_count == 1) {
+        flag = false;
+      }
+      auto paramdec = varlist->child[0];
+      auto spec = Specifier(paramdec->child[0]);
+      auto vardec = paramdec->child[1];
+      if (spec.k == Kind::Error) {
+        func.has_error = true;
+      }
+      if (vardec->child_count == 1) {
+        if (!isNameExists(func.fields, vardec->child[0]->val)) {
+          Field f;
+          f.name = vardec->child[0]->val;
+          f.type = spec;
+          func.fields.push_back(f);
+        } else {
+          func.has_error = true;
+          std::string msg;
+          msg.append("Conflict name in function parameters");
+          printSemanticError(REDEF_VAR, vardec->lineNum, msg);
+        }
+      } else {
+        std::vector<int> dimesions;
+        uint32_t size = 1;
+        while (vardec->child_count != 1) {
+          int dim = getINTValue(vardec->child[2]);
+          dimesions.push_back(dim);
+          size *= dim;
+          vardec = vardec->child[0];
+        }
+        if (!isNameExists(func.fields, vardec->child[0]->val)) {
+          Field f;
+          Type arr_type;
+          arr_type.k = Kind::Array;
+          arr_type.array.dim = dimesions.size();
+          arr_type.array.size = size;
+          arr_type.array.t = std::make_shared<Type>();
+          *(arr_type.array.t) = spec;
+          f.type = arr_type;
+          f.name = vardec->child[0]->val;
+          func.fields.push_back(f);
+        } else {
+          func.has_error = true;
+          std::string msg;
+          msg.append("Conflict name in function parameters (Array)");
+          printSemanticError(REDEF_VAR, vardec->lineNum, msg);
+        }
+      }
+      if (flag) {
+        varlist = varlist->child[2];
+      }
+    }
+
+  } else {
+    // non parameters
+    // do nothing
+  }
+  func.name = name;
+  return func;
 }
