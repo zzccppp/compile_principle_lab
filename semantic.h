@@ -72,13 +72,13 @@ using StructDefTable = std::unordered_map<std::string, Type>;
 class SymTable {
 private:
   FunctionTable functionTable;
-  std::stack<FieldTable> fieldTableStack;
+  std::vector<FieldTable> fieldTableStack;
   StructDefTable structTable;
 
 public:
   SymTable() {
     FieldTable t;
-    fieldTableStack.push(t);
+    fieldTableStack.push_back(t);
   }
   inline void traverseAST(pASTNode node) {
     if (node == nullptr) {
@@ -96,14 +96,14 @@ public:
 
   inline void newFieldTable() {
     FieldTable t;
-    fieldTableStack.push(t);
+    fieldTableStack.push_back(t);
   }
 
-  inline void popFieldTable() { fieldTableStack.pop(); }
+  inline void popFieldTable() { fieldTableStack.pop_back(); }
 
   inline bool isVarNameExists(std::string name) {
-    auto fd = this->fieldTableStack.top().find(name);
-    if (fd != this->fieldTableStack.top().end()) {
+    auto fd = this->fieldTableStack.back().find(name);
+    if (fd != this->fieldTableStack.back().end()) {
       return true;
     }
     // variable cannot be same name as defined structure
@@ -112,6 +112,18 @@ public:
       return true;
     }
     return false;
+  }
+  inline Type findVar(std::string name) {
+    // 从栈顶向下搜索
+    for (size_t i = fieldTableStack.size() - 1; i >= 0; i--) {
+      auto fd = fieldTableStack[i].find(name);
+      if (fd != fieldTableStack[i].end()) {
+        return fd->second.type;
+      }
+    }
+    Type t;
+    t.k = Kind::Error;
+    return t;
   }
 
 private:
@@ -122,6 +134,10 @@ private:
   void Def_Struct(pASTNode node, Type *t);
   void ExtDecList(pASTNode node, Type *t);
   _FunDecInf FunDec(pASTNode node);
+  void CompSt(pASTNode node, const Function &func);
+  void DefList_CompSt(pASTNode node, const Function &func);
+  void Def_CompSt(pASTNode node, const Function &func);
+  Type Exp(pASTNode node);
 };
 
 enum ErrorType {
@@ -152,7 +168,8 @@ static inline void printSemanticError(ErrorType type, int lineno,
             << std::endl;
 }
 
-static inline bool isNameExists(std::vector<Field> &field, std::string name) {
+static inline bool isNameExists(const std::vector<Field> &field,
+                                std::string name) {
   for (auto var : field) {
     if (var.name == name) {
       return true;

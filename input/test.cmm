@@ -10,14 +10,17 @@ struct saaa{
 struct {
     int a,b;
 };
-int ii ;
+int ii;
 struct sbbb sb;
 float saaa;
 int arr[2][3];
 
 struct saaa test(int x, int y, struct saaa arr [2][3]);
 struct saaa test(int x, int y, struct saaa arr [2][3]);
-int test();
+struct saaa test(int x, int y, struct saaa arr [2][3]) {
+  int b;
+  b = x + y;
+}
 
 int main(){
 	int i = 3;
@@ -33,4 +36,5 @@ int test(int x, int y) {
 
 int test() {
   float x = 1.2;
+  10 = x;
 }

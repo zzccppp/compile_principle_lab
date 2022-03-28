@@ -19,18 +19,17 @@ bool Type::eq(Type &other) {
            this->array.t->eq(*other.array.t);
   }
   if (this->k == Structure) {
-    bool flag = true;
     if (this->structure.fields.size() != other.structure.fields.size()) {
       return false;
     }
     for (size_t i = 0; i < this->structure.fields.size(); i++) {
       if (!this->structure.fields[i].type.eq(other.structure.fields[i].type)) {
-        flag = false;
+        return false;
       }
     }
-    return flag;
+    return true;
   }
-  std::cout << "UnExpteced Type!!\n";
+  UNREACHABLE;
   return true;
 }
 
@@ -67,7 +66,8 @@ void SymTable::ExtDef(pASTNode node) {
         bool ret_type_error = (t.k == Kind::Error);
         if (ret_type_error || func.has_error) {
           // 忽略有错误的函数声明
-          std::cerr << "Ignore function declarations with errors at Line" << node->child[1]->lineNum << std::endl;
+          std::cerr << "Ignore function declarations with errors at Line"
+                    << node->child[1]->lineNum << std::endl;
         } else {
           // 判断是否有重名的声明
           auto fd = this->functionTable.find(func.name);
@@ -96,8 +96,39 @@ void SymTable::ExtDef(pASTNode node) {
         bool ret_type_error = (t.k == Kind::Error);
         if (ret_type_error || func.has_error) {
           // 如果定义有错误就不去查重
-          std::cerr << "Ignore function declarations with errors at Line" << node->child[1]->lineNum << std::endl;
+          std::cerr << "Error detected, skipping declaration check"
+                    << node->child[1]->lineNum << std::endl;
         } else {
+          auto fd = this->functionTable.find(func.name);
+          Function f;
+          f.fields = func.fields;
+          f.has_body = true;
+          f.name = func.name;
+          f.ret_type = t;
+          if (fd == this->functionTable.end()) {
+            // not found
+            this->functionTable.insert({f.name, f});
+          } else {
+            // has same name
+            if (f.eq(fd->second)) {
+              // same declaration
+              if (fd->second.has_body) {
+                // 检测到之前有定义
+                std::string msg;
+                msg.append("Conflicting function definition");
+                printSemanticError(REDEF_FUNC, node->child[1]->lineNum, msg);
+              } else {
+                fd->second.has_body = true;
+              }
+            } else {
+              std::string msg;
+              msg.append("Conflicting function definition");
+              printSemanticError(FUNC_MULTI_DEF, node->child[1]->lineNum, msg);
+            }
+          }
+          auto compst = node->child[2];
+          // Process CompSt
+          CompSt(compst, f);
         }
       }
     } else {
@@ -275,7 +306,7 @@ void SymTable::ExtDecList(pASTNode extdeclist, Type *spec) {
         Field f;
         f.name = vardec->child[0]->val;
         f.type = *spec;
-        this->fieldTableStack.top().insert({f.name, f});
+        this->fieldTableStack.back().insert({f.name, f});
       } else {
         std::string msg;
         msg.append("Conflict name in global variables: ");
@@ -302,7 +333,7 @@ void SymTable::ExtDecList(pASTNode extdeclist, Type *spec) {
         *(arr_type.array.t) = *spec;
         f.type = arr_type;
         f.name = vardec->child[0]->val;
-        this->fieldTableStack.top().insert({f.name, f});
+        this->fieldTableStack.back().insert({f.name, f});
       } else {
         std::string msg;
         msg.append("Conflict array name in global variables: ");
@@ -394,4 +425,246 @@ _FunDecInf SymTable::FunDec(pASTNode node) {
   }
   func.name = name;
   return func;
+}
+
+void SymTable::CompSt(pASTNode compst, const Function &func) {
+  // LC DefList StmtList RC
+  this->newFieldTable();
+  // 这里将函数定义的变量直接放入当前FiledTable中
+  for (auto f : func.fields) {
+    this->fieldTableStack.back().insert({f.name, f});
+  }
+  DefList_CompSt(compst->child[1], func);
+  this->popFieldTable();
+}
+
+void SymTable::DefList_CompSt(pASTNode node, const Function &func) {
+  /*
+   DefList:
+     %empty
+     | Def DefList
+ */
+  auto t = node;
+  while (t != nullptr) {
+    Def_CompSt(t->child[0], func);
+    t = t->child[1];
+  }
+}
+
+void SymTable::Def_CompSt(pASTNode node, const Function &func) {
+  /*
+     Def: Specifier DecList SEMI
+     DecList: Dec
+       | Dec COMMA DecList
+     Dec: VarDec
+     | VarDec ASSIGNOP AssignmentExp
+     VarDec: ID
+       | VarDec LB INT RB
+  */
+  auto spec = Specifier(node->child[0]);
+  auto declist = node->child[1];
+  bool flag = true;
+  while (flag) {
+    if (declist->child_count == 1) {
+      flag = false;
+    }
+    auto dec = declist->child[0];
+    auto vardec = dec->child[0];
+    if (vardec->child_count == 1) {
+      // VarDec -> ID
+      // 检查函数定义的变量，以及当前变量域
+      bool flag1 = isVarNameExists(vardec->child[0]->val);
+      bool flag2 = isNameExists(func.fields, vardec->child[0]->val);
+      if (flag1 || flag2) {
+        std::string msg;
+        msg.append("Duplicate definition of variable");
+        printSemanticError(REDEF_VAR, vardec->lineNum, msg);
+      } else {
+        Field f;
+        f.name = vardec->child[0]->val;
+        f.type = spec;
+        this->fieldTableStack.back().insert({f.name, f});
+      }
+    } else {
+      // VarDec -> VarDec LB INT RB
+      std::vector<int> dimesions;
+      uint32_t size = 1;
+      while (vardec->child_count != 1) {
+        int dim = getINTValue(vardec->child[2]);
+        dimesions.push_back(dim);
+        size *= dim;
+        vardec = vardec->child[0];
+      }
+      bool flag1 = isVarNameExists(vardec->child[0]->val);
+      bool flag2 = isNameExists(func.fields, vardec->child[0]->val);
+      if (flag1 || flag2) {
+        std::string msg;
+        msg.append("Duplicate definition of array variable");
+        printSemanticError(REDEF_VAR, vardec->lineNum, msg);
+      } else {
+        Field f;
+        Type arr_type;
+        arr_type.k = Kind::Array;
+        arr_type.array.dim = dimesions.size();
+        arr_type.array.size = size;
+        arr_type.array.t = std::make_shared<Type>();
+        *(arr_type.array.t) = spec;
+        f.type = arr_type;
+        f.name = vardec->child[0]->val;
+        this->fieldTableStack.back().insert({f.name, f});
+      }
+    }
+    if (dec->child_count != 1) {
+      auto assignmentexp = dec->child[2];
+      // TODO: Process Exp Here
+    } else {
+    }
+    if (flag) {
+      declist = declist->child[2];
+    }
+  }
+}
+
+Type SymTable::Exp(pASTNode node) {
+  // Exp -> Exp ASSIGNOP Exp
+  //      | Exp AND Exp
+  //      | Exp OR Exp
+  //      | Exp RELOP Exp
+  //      | Exp PLUS Exp
+  //      | Exp MINUS Exp
+  //      | Exp STAR Exp
+  //      | Exp DIV Exp
+  //      | LP Exp RP
+  //      | MINUS Exp
+  //      | NOT Exp
+  //      | ID LP Args RP
+  //      | ID LP RP
+  //      | Exp LB Exp RB
+  //      | Exp DOT ID
+  //      | ID
+  //      | INT
+  //      | FLOAT
+  Type error_type;
+  error_type.k = Kind::Error;
+  if (node->child_count == 1) {
+    // ID | INT | FLOAT
+    auto name = node->child[0]->name;
+    if (!strcmp(name, "ID")) {
+      auto find = findVar(node->child[0]->val);
+      if (find.k == Kind::Error) {
+        std::string msg;
+        msg.append("Undefined Variables");
+        printSemanticError(UNDEF_VAR, node->child[0]->lineNum, msg);
+        return error_type;
+      } else {
+        return find;
+      }
+    } else if (!strcmp(name, "INT")) {
+      Type t;
+      t.k = Kind::Basic;
+      t.basic = Int;
+      return t;
+    } else if (!strcmp(name, "FLOAT")) {
+      Type t;
+      t.k = Kind::Basic;
+      t.basic = Float;
+      return t;
+    } else {
+      UNREACHABLE;
+      return error_type;
+    }
+  } else if (node->child_count == 2) {
+    // MINUS Exp
+    // NOT Exp
+    auto name = node->child[0]->name;
+    auto exp_type = Exp(node->child[1]);
+    if (!strcmp(name, "MINUS")) {
+      if (exp_type.k != Kind::Basic) {
+        // Error
+        std::string msg;
+        msg.append("Cannot Apply MINUS to the type");
+        printSemanticError(TYPE_MISMATCH_OP, node->child[0]->lineNum, msg);
+        return error_type;
+      } else {
+        return exp_type;
+      }
+    } else {
+      if (exp_type.k == Kind::Basic && exp_type.basic == BasicType::Int) {
+        return exp_type;
+      } else {
+        std::string msg;
+        msg.append("Cannot Apply NOT to the type");
+        printSemanticError(TYPE_MISMATCH_OP, node->child[0]->lineNum, msg);
+        return error_type;
+      }
+    }
+  } else if (node->child_count == 3) {
+    //  Exp -> Exp ASSIGNOP Exp
+    //      | Exp AND Exp
+    //      | Exp OR Exp
+    //      | Exp RELOP Exp
+    //      | Exp PLUS Exp
+    //      | Exp MINUS Exp
+    //      | Exp STAR Exp
+    //      | Exp DIV Exp
+    //      | LP Exp RP
+    //      | ID LP RP
+    //      | Exp DOT ID
+    auto name1 = node->child[0]->name;
+    auto name2 = node->child[1]->name;
+    auto name3 = node->child[2]->name;
+
+    if (!strcmp(name1, "Exp") && !strcmp(name3, "Exp")) {
+      auto t1 = Exp(node->child[0]);
+      auto t2 = Exp(node->child[2]);
+      if (!strcmp(name2, "ASSIGNOP")) {
+        // check left value
+        auto lhs = node->child[0];
+        bool is_lvalue =
+            (lhs->child_count == 1 && !strcmp(lhs->child[0]->name, "ID")) ||
+            (!strcmp(lhs->child[1]->name, "DOT")) ||
+            (!strcmp(lhs->child[1]->name, "LB"));
+        if (is_lvalue) {
+          if (!t1.eq(t2)) {
+            std::string msg;
+            msg.append("Type mismatched for assignment exp");
+            printSemanticError(TYPE_MISMATCH_ASSIGN, node->child[0]->lineNum,
+                               msg);
+            return error_type;
+          } else {
+            return t1;
+          }
+        } else {
+          std::string msg;
+          msg.append("Cannot Assign to a rvalue");
+          printSemanticError(LEFT_VAR_ASSIGN, node->child[0]->lineNum, msg);
+          return error_type;
+        }
+      } else if (!strcmp(name2, "AND") && !strcmp(name2, "OR")) {
+        // must Integer Type
+        if (!(t1.k == Basic && t2.k == Basic && t1.basic == Int &&
+              t2.basic == Int)) {
+          std::string msg;
+          msg.append("Mismatched Type for AND/OR");
+          printSemanticError(TYPE_MISMATCH_OP, node->child[0]->lineNum, msg);
+          return error_type;
+        } else {
+           
+        }
+      } else if (!strcmp(name2, "RELOP")) {
+      } else if (!strcmp(name2, "PLUS")) {
+      } else if (!strcmp(name2, "MINUS")) {
+      } else if (!strcmp(name2, "STAR")) {
+      } else if (!strcmp(name2, "DIV")) {
+      } else {
+        UNREACHABLE;
+      }
+    } else if (!strcmp(name2, "Exp")) {
+      // LP Exp RP
+    } else if (!strcmp(name2, "LP")) {
+      // ID LP RP
+    } else {
+      // Exp DOT ID
+    }
+  }
 }
