@@ -47,8 +47,17 @@ void SymTable::ExtDef(pASTNode node) {
     if (t.k == Structure) {
       if (!t.structure.unname) {
         auto fd = this->structTable.find(t.structure.structName);
-        if (fd == this->structTable.end()) {
+        bool flag =
+            this->structTable.find(t.structure.structName) ==
+                this->structTable.end() &&
+            this->fieldTableStack.front().find(t.structure.structName) ==
+                this->fieldTableStack.front().end();
+        if (flag) {
           this->structTable.insert({t.structure.structName, t});
+        } else {
+          std::string msg;
+          msg.append("Conflict struct name");
+          printSemanticError(DUPLICATED_NAME, node->lineNum, msg);
         }
       } else {
         // unname structure here is useless
@@ -649,13 +658,27 @@ Type SymTable::Exp(pASTNode node) {
           printSemanticError(TYPE_MISMATCH_OP, node->child[0]->lineNum, msg);
           return error_type;
         } else {
-           
+          return t1;
         }
       } else if (!strcmp(name2, "RELOP")) {
-      } else if (!strcmp(name2, "PLUS")) {
-      } else if (!strcmp(name2, "MINUS")) {
-      } else if (!strcmp(name2, "STAR")) {
-      } else if (!strcmp(name2, "DIV")) {
+        if (t1.k == Basic && t2.k == Basic && t1.basic == t2.basic) {
+          // 关系运算完成后是Int类型
+          Type ret;
+          ret.k = Basic;
+          ret.basic = Int;
+          return ret;
+        } else {
+          std::string msg;
+          msg.append("Mismatched Type for RELOP");
+          printSemanticError(TYPE_MISMATCH_OP, node->child[0]->lineNum, msg);
+          return error_type;
+        }
+      } else if (!strcmp(name2, "PLUS") || !strcmp(name2, "MINUS") ||
+                 !strcmp(name2, "STAR") || !strcmp(name2, "DIV")) {
+        if (t1.k == Basic && t2.k == Basic && t1.basic == t2.basic) { 
+          return t1;
+        } else {
+        }
       } else {
         UNREACHABLE;
       }

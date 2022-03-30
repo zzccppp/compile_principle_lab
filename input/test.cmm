@@ -7,7 +7,7 @@ struct saaa{
       int a1 ,a2;
     } inner;
 };
-struct {
+struct saaa{
     int a,b;
 };
 int ii;
