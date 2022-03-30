@@ -1,0 +1,14 @@
+struct s1 {
+    int a;
+    int b;
+  };
+
+
+int test(int x,float y);
+int test2();
+
+int main(){
+  int x = 0;
+  int y = a;
+  int z = test2();
+}

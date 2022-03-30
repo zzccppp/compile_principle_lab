@@ -149,7 +149,7 @@ enum ErrorType {
   LEFT_VAR_ASSIGN,  // The left-hand side of an assignment must be a variable.
   TYPE_MISMATCH_OP, // Type mismatched for operands.
   TYPE_MISMATCH_RETURN, // Type mismatched for return.
-  FUNC_AGRC_MISMATCH,   // Function is not applicable for arguments
+  FUNC_ARG_MISMATCH,   // Function is not applicable for arguments
   NOT_A_ARRAY,          // Variable is not a Array
   NOT_A_FUNC,           // Variable is not a Function
   NOT_A_INT,            // Variable is not a Integer

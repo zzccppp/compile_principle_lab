@@ -526,6 +526,8 @@ void SymTable::Def_CompSt(pASTNode node, const Function &func) {
     if (dec->child_count != 1) {
       auto assignmentexp = dec->child[2];
       // TODO: Process Exp Here
+      // | VarDec ASSIGNOP AssignmentExp
+      auto exp = Exp(assignmentexp);
     } else {
     }
     if (flag) {
@@ -675,19 +677,147 @@ Type SymTable::Exp(pASTNode node) {
         }
       } else if (!strcmp(name2, "PLUS") || !strcmp(name2, "MINUS") ||
                  !strcmp(name2, "STAR") || !strcmp(name2, "DIV")) {
-        if (t1.k == Basic && t2.k == Basic && t1.basic == t2.basic) { 
+        if (t1.k == Basic && t2.k == Basic && t1.basic == t2.basic) {
           return t1;
         } else {
+          std::string msg;
+          msg.append("Mismatched Type for arithmetic");
+          printSemanticError(TYPE_MISMATCH_OP, node->child[0]->lineNum, msg);
+          return error_type;
         }
       } else {
         UNREACHABLE;
       }
     } else if (!strcmp(name2, "Exp")) {
       // LP Exp RP
+      return Exp(node->child[1]);
     } else if (!strcmp(name2, "LP")) {
       // ID LP RP
+      // function call
+      auto fd = this->functionTable.find(node->child[0]->val);
+      if (fd == this->functionTable.end()) {
+        // not found
+        if (findVar(node->child[0]->val).k == Error) {
+          std::string msg;
+          msg.append("Cannot use () Op to normal variable");
+          printSemanticError(NOT_A_FUNC, node->child[0]->lineNum, msg);
+          return error_type;
+        }
+        std::string msg;
+        msg.append("Undefined Function");
+        printSemanticError(UNDEF_FUNC, node->child[0]->lineNum, msg);
+        return error_type;
+      } else {
+        auto function = fd->second;
+        if (function.fields.size() == 0) {
+          return function.ret_type;
+        } else {
+          std::string msg;
+          msg.append("Function argument mismatch");
+          printSemanticError(FUNC_ARG_MISMATCH, node->child[0]->lineNum, msg);
+          return error_type;
+        }
+      }
     } else {
       // Exp DOT ID
+      auto type1 = Exp(node->child[0]);
+      if (type1.k != Kind::Structure) {
+        std::string msg;
+        msg.append("Cannot use DOT on non-struct types");
+        printSemanticError(ILLEGAL_USE_DOT, node->child[0]->lineNum, msg);
+        return error_type;
+      } else {
+        int len = type1.structure.fields.size();
+        for (size_t i = 0; i < len; i++) {
+          Field &f = type1.structure.fields[i];
+          std::string temp = node->child[2]->val;
+          if (f.name == temp) {
+            return f.type;
+          }
+        }
+        // not found
+        return error_type;
+      }
+    }
+  } else {
+    if (!strcmp(node->child[0]->name, "ID")) {
+      // Exp -> ID LP Args RP
+      auto fd = this->functionTable.find(node->child[0]->val);
+      if (fd == this->functionTable.end()) {
+        // not found
+        if (findVar(node->child[0]->val).k == Error) {
+          std::string msg;
+          msg.append("Cannot use () Op to normal variable");
+          printSemanticError(NOT_A_FUNC, node->child[0]->lineNum, msg);
+          return error_type;
+        }
+        std::string msg;
+        msg.append("Undefined Function");
+        printSemanticError(UNDEF_FUNC, node->child[0]->lineNum, msg);
+        return error_type;
+      } else {
+        /* Args:
+            AssignmentExp
+            | Args COMMA AssignmentExp
+         */
+        auto args = node->child[2];
+        std::vector<Type> types;
+        bool flag = true;
+        while (flag) {
+          if (args->child_count == 1) {
+            flag = false;
+          }
+          auto assignmentexp = args->child[0];
+          if (flag) {
+            assignmentexp = args->child[2];
+          }
+          auto tt = Exp(assignmentexp);
+          types.insert(types.begin(), tt);
+          if (flag) {
+            args = args->child[0];
+          }
+        }
+        auto function = fd->second;
+        if (function.fields.size() != types.size()) {
+          std::string msg;
+          msg.append("Function argument mismatch");
+          printSemanticError(FUNC_ARG_MISMATCH, node->child[0]->lineNum, msg);
+          return error_type;
+        }
+        for (size_t i = 0; i < function.fields.size(); i++) {
+          if (!function.fields[i].type.eq(types[i])) {
+            std::string msg;
+            msg.append("Function argument mismatch");
+            printSemanticError(FUNC_ARG_MISMATCH, node->child[0]->lineNum, msg);
+            return error_type;
+          }
+        }
+        return function.ret_type;
+      }
+    } else {
+      // Exp -> Exp LB Exp RB
+      auto t1 = Exp(node->child[0]);
+      if (t1.k != Kind::Array) {
+        std::string msg;
+        msg.append("Cannot use [] operator on non-array type");
+        printSemanticError(NOT_A_ARRAY, node->child[0]->lineNum, msg);
+        return error_type;
+      }
+      auto t2 = Exp(node->child[2]);
+      if (!(t2.k == Kind::Basic && t2.basic == Int)) {
+        std::string msg;
+        msg.append("Non-int type cannot appear in []");
+        printSemanticError(NOT_A_INT, node->child[0]->lineNum, msg);
+        return error_type;
+      }
+      if (t1.array.dim == 1) {
+        return *t1.array.t;
+      } else {
+        t1.array.dim -= 1;
+        return t1;
+      }
     }
   }
+  UNREACHABLE;
+  return error_type;
 }
