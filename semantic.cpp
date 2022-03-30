@@ -8,7 +8,7 @@ bool Type::eq(Type &other) {
   if (this->k != other.k) {
     return false;
   }
-  if (this->k == Error) {
+  if (this->k == Error || other.k == Error) {
     return true;
   }
   if (this->k == Basic) {
@@ -85,6 +85,7 @@ void SymTable::ExtDef(pASTNode node) {
           f.has_body = false;
           f.name = func.name;
           f.ret_type = t;
+          f.lineno = node->child[1]->lineNum;
           if (fd == this->functionTable.end()) {
             // not found
             this->functionTable.insert({f.name, f});
@@ -114,6 +115,7 @@ void SymTable::ExtDef(pASTNode node) {
           f.has_body = true;
           f.name = func.name;
           f.ret_type = t;
+          f.lineno = node->child[1]->lineNum;
           if (fd == this->functionTable.end()) {
             // not found
             this->functionTable.insert({f.name, f});
@@ -444,6 +446,7 @@ void SymTable::CompSt(pASTNode compst, const Function &func) {
     this->fieldTableStack.back().insert({f.name, f});
   }
   DefList_CompSt(compst->child[1], func);
+  StmtList(compst->child[2], func);
   this->popFieldTable();
 }
 
@@ -473,6 +476,7 @@ void SymTable::Def_CompSt(pASTNode node, const Function &func) {
   auto spec = Specifier(node->child[0]);
   auto declist = node->child[1];
   bool flag = true;
+  Type var_type;
   while (flag) {
     if (declist->child_count == 1) {
       flag = false;
@@ -494,6 +498,7 @@ void SymTable::Def_CompSt(pASTNode node, const Function &func) {
         f.type = spec;
         this->fieldTableStack.back().insert({f.name, f});
       }
+      var_type = spec;
     } else {
       // VarDec -> VarDec LB INT RB
       std::vector<int> dimesions;
@@ -504,6 +509,12 @@ void SymTable::Def_CompSt(pASTNode node, const Function &func) {
         size *= dim;
         vardec = vardec->child[0];
       }
+      Type arr_type;
+      arr_type.k = Kind::Array;
+      arr_type.array.dim = dimesions.size();
+      arr_type.array.size = size;
+      arr_type.array.t = std::make_shared<Type>();
+      *(arr_type.array.t) = spec;
       bool flag1 = isVarNameExists(vardec->child[0]->val);
       bool flag2 = isNameExists(func.fields, vardec->child[0]->val);
       if (flag1 || flag2) {
@@ -512,23 +523,25 @@ void SymTable::Def_CompSt(pASTNode node, const Function &func) {
         printSemanticError(REDEF_VAR, vardec->lineNum, msg);
       } else {
         Field f;
-        Type arr_type;
-        arr_type.k = Kind::Array;
-        arr_type.array.dim = dimesions.size();
-        arr_type.array.size = size;
-        arr_type.array.t = std::make_shared<Type>();
-        *(arr_type.array.t) = spec;
         f.type = arr_type;
         f.name = vardec->child[0]->val;
         this->fieldTableStack.back().insert({f.name, f});
       }
+      var_type = arr_type;
     }
     if (dec->child_count != 1) {
       auto assignmentexp = dec->child[2];
       // TODO: Process Exp Here
       // | VarDec ASSIGNOP AssignmentExp
       auto exp = Exp(assignmentexp);
+      // 这里在eq的逻辑中忽略了Error类型的检查
+      if (!exp.eq(var_type)) {
+        std::string msg;
+        msg.append("Type mismatched for assignment");
+        printSemanticError(TYPE_MISMATCH_ASSIGN, assignmentexp->lineNum, msg);
+      }
     } else {
+      // do nothing
     }
     if (flag) {
       declist = declist->child[2];
@@ -694,7 +707,8 @@ Type SymTable::Exp(pASTNode node) {
     } else if (!strcmp(name2, "LP")) {
       // ID LP RP
       // function call
-      auto fd = this->functionTable.find(node->child[0]->val);
+      auto val = node->child[0]->val;
+      auto fd = this->functionTable.find(val);
       if (fd == this->functionTable.end()) {
         // not found
         if (findVar(node->child[0]->val).k == Error) {
@@ -820,4 +834,65 @@ Type SymTable::Exp(pASTNode node) {
   }
   UNREACHABLE;
   return error_type;
+}
+
+void SymTable::StmtList(pASTNode node, const Function &func) {
+  /*
+  StmtList:
+          %empty { $$ = 0; }
+          | Stmt StmtList
+  */
+  auto t = node;
+  while (t != nullptr) {
+    Stmt(t->child[0], func);
+    t = t->child[1];
+  }
+}
+void SymTable::Stmt(pASTNode node, const Function &func) {
+  /*
+  Stmt: Exp SEMI
+      | CompSt
+      | RETURN Exp SEMI
+      | IF LP Exp RP Stmt
+      | IF LP Exp RP Stmt ELSE Stmt
+      | WHILE LP Exp RP Stmt
+  */
+  if (node->child_count == 1) {
+    // CompSt
+    CompSt(node->child[0], func);
+  } else if (node->child_count == 2) {
+    // Exp SEMI
+    Exp(node->child[0]);
+  } else if (node->child_count == 3) {
+    // RETURN Exp SEMI
+    auto type = Exp(node->child[1]);
+    auto ret_type = func.ret_type;
+    if (!ret_type.eq(type)) {
+      std::string msg;
+      msg.append("Return Type mismatch");
+      printSemanticError(TYPE_MISMATCH_RETURN, node->lineNum, msg);
+    }
+  } else {
+    if (!strcmp(node->child[0]->name, "IF")) {
+      auto exp_type = Exp(node->child[2]);
+      if (!(exp_type.k == Basic && exp_type.basic == Int)) {
+        std::string msg;
+        msg.append("Type mismatch in IF()");
+        printSemanticError(TYPE_MISMATCH_OP, node->lineNum, msg);
+      }
+      Stmt(node->child[4], func);
+      if (node->child_count == 7) {
+        Stmt(node->child[6], func);
+      }
+    } else {
+      // WHILE
+      auto exp_type = Exp(node->child[2]);
+      if (!(exp_type.k == Basic && exp_type.basic == Int)) {
+        std::string msg;
+        msg.append("Type mismatch in WHILE()");
+        printSemanticError(TYPE_MISMATCH_OP, node->lineNum, msg);
+      }
+      Stmt(node->child[4], func);
+    }
+  }
 }

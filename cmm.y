@@ -162,9 +162,9 @@ PostfixExp:
           /* PrimaryExp  { $$ = newInternalNode(@$.first_line, "PostfixExp", 1, $1); } */
           PrimaryExp  { $$ = $1; }
           | PostfixExp LB AssignmentExp RB  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
-          | PostfixExp LP RP  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
+          | ID LP RP  { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
           | PostfixExp DOT ID   { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
-          | PostfixExp LP Args RP  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
+          | ID LP Args RP  { $$ = newInternalNode(@$.first_line, "Exp", 4, $1, $2, $3, $4); }
           | PostfixExp LB error RB { synError = 1; printErrorMsg('B', @3.first_line, "error in []");}
           ; 
 

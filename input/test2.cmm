@@ -3,12 +3,22 @@ struct s1 {
     int b;
   };
 
+struct s2 {
+    int b;
+    int c;
+  };
 
-int test(int x,float y);
+
+int test(int x,int y);
 int test2();
 
 int main(){
   int x = 0;
-  int y = a;
-  int z = test2();
+  int y [3][2];
+  int arr[2] = y[0];
+  int zz = test(x,y);
+  int xx = y[0];
+  struct s1 s11;
+  struct s2 s22;
+  s11 =s22;
 }

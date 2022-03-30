@@ -14,7 +14,36 @@ static inline void logError(int line, const std::string &message) {
 }
 
 enum Kind { Basic, Array, Structure, Error };
+
 enum BasicType { Int, Float };
+
+enum ErrorType {
+  UNDEF_VAR = 1,        // Undefined Variable
+  UNDEF_FUNC,           // Undefined Function
+  REDEF_VAR,            // Redefined Variable
+  REDEF_FUNC,           // Redefined Function
+  TYPE_MISMATCH_ASSIGN, // Type mismatchedfor assignment.
+  LEFT_VAR_ASSIGN,  // The left-hand side of an assignment must be a variable.
+  TYPE_MISMATCH_OP, // Type mismatched for operands.
+  TYPE_MISMATCH_RETURN, // Type mismatched for return.
+  FUNC_ARG_MISMATCH,    // Function is not applicable for arguments
+  NOT_A_ARRAY,          // Variable is not a Array
+  NOT_A_FUNC,           // Variable is not a Function
+  NOT_A_INT,            // Variable is not a Integer
+  ILLEGAL_USE_DOT,      // Illegal use of "."
+  NONEXISTFIELD,        // Non-existentfield
+  REDEF_FEILD,          // Redefined field
+  DUPLICATED_NAME,      // Duplicated name
+  UNDEF_STRUCT,         // Undefined structure
+  FUNC_ONLY_DEF,
+  FUNC_MULTI_DEF,
+};
+
+static inline void printSemanticError(ErrorType type, int lineno,
+                                      std::string msg) {
+  std::cout << "Error type " << type << " at Line " << lineno << ": " << msg
+            << std::endl;
+}
 
 struct Field;
 struct _FunDecInf;
@@ -47,6 +76,7 @@ struct Function {
   Type ret_type;
   std::vector<Field> fields;
   bool has_body;
+  int lineno;
 
   inline bool eq(Function &other) {
     if (name == other.name) {
@@ -94,6 +124,20 @@ public:
     }
   }
 
+  inline void checkFunction() {
+    // check if the function has body
+    for (auto iter = functionTable.begin(); iter != functionTable.end();
+         iter++) {
+      if (!iter->second.has_body) {
+        std::string msg;
+        msg.append("The Function ");
+        msg.append(iter->second.name);
+        msg.append(" has no body");
+        printSemanticError(FUNC_ONLY_DEF, iter->second.lineno, msg);
+      }
+    }
+  }
+
   inline void newFieldTable() {
     FieldTable t;
     fieldTableStack.push_back(t);
@@ -115,7 +159,7 @@ public:
   }
   inline Type findVar(std::string name) {
     // 从栈顶向下搜索
-    for (size_t i = fieldTableStack.size() - 1; i >= 0; i--) {
+    for (int i = fieldTableStack.size() - 1; i >= 0; i--) {
       auto fd = fieldTableStack[i].find(name);
       if (fd != fieldTableStack[i].end()) {
         return fd->second.type;
@@ -138,35 +182,9 @@ private:
   void DefList_CompSt(pASTNode node, const Function &func);
   void Def_CompSt(pASTNode node, const Function &func);
   Type Exp(pASTNode node);
+  void StmtList(pASTNode, const Function &func);
+  void Stmt(pASTNode, const Function &func);
 };
-
-enum ErrorType {
-  UNDEF_VAR = 1,        // Undefined Variable
-  UNDEF_FUNC,           // Undefined Function
-  REDEF_VAR,            // Redefined Variable
-  REDEF_FUNC,           // Redefined Function
-  TYPE_MISMATCH_ASSIGN, // Type mismatchedfor assignment.
-  LEFT_VAR_ASSIGN,  // The left-hand side of an assignment must be a variable.
-  TYPE_MISMATCH_OP, // Type mismatched for operands.
-  TYPE_MISMATCH_RETURN, // Type mismatched for return.
-  FUNC_ARG_MISMATCH,   // Function is not applicable for arguments
-  NOT_A_ARRAY,          // Variable is not a Array
-  NOT_A_FUNC,           // Variable is not a Function
-  NOT_A_INT,            // Variable is not a Integer
-  ILLEGAL_USE_DOT,      // Illegal use of "."
-  NONEXISTFIELD,        // Non-existentfield
-  REDEF_FEILD,          // Redefined field
-  DUPLICATED_NAME,      // Duplicated name
-  UNDEF_STRUCT,         // Undefined structure
-  FUNC_ONLY_DEF,
-  FUNC_MULTI_DEF,
-};
-
-static inline void printSemanticError(ErrorType type, int lineno,
-                                      std::string msg) {
-  std::cout << "Error type " << type << " at Line " << lineno << ": " << msg
-            << std::endl;
-}
 
 static inline bool isNameExists(const std::vector<Field> &field,
                                 std::string name) {
@@ -180,6 +198,7 @@ static inline bool isNameExists(const std::vector<Field> &field,
 
 static inline int getINTValue(pASTNode node) {
   if (node->type != tokINT) {
+    UNREACHABLE;
     std::cerr << "Should Has Some Bugs\n";
     return 0;
   }

@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
     printASTTree(root, 0);
     SymTable t;
     t.traverseAST(root);
+    t.checkFunction();
   }
   return 0;
 }
