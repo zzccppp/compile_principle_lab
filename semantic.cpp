@@ -134,7 +134,7 @@ void SymTable::ExtDef(pASTNode node) {
             } else {
               std::string msg;
               msg.append("Conflicting function definition");
-              printSemanticError(FUNC_MULTI_DEF, node->child[1]->lineNum, msg);
+              printSemanticError(REDEF_FUNC, node->child[1]->lineNum, msg);
             }
           }
           auto compst = node->child[2];
@@ -644,10 +644,13 @@ Type SymTable::Exp(pASTNode node) {
       if (!strcmp(name2, "ASSIGNOP")) {
         // check left value
         auto lhs = node->child[0];
-        bool is_lvalue =
-            (lhs->child_count == 1 && !strcmp(lhs->child[0]->name, "ID")) ||
-            (!strcmp(lhs->child[1]->name, "DOT")) ||
+        bool is_lvalue = false;
+        if (lhs->child_count == 1) {
+          is_lvalue = (lhs->child_count == 1 && !strcmp(lhs->child[0]->name, "ID"));
+        } else if (lhs->child_count >= 2) {
+          is_lvalue = (!strcmp(lhs->child[1]->name, "DOT")) ||
             (!strcmp(lhs->child[1]->name, "LB"));
+        }
         if (is_lvalue) {
           if (!t1.eq(t2)) {
             std::string msg;
@@ -711,7 +714,7 @@ Type SymTable::Exp(pASTNode node) {
       auto fd = this->functionTable.find(val);
       if (fd == this->functionTable.end()) {
         // not found
-        if (findVar(node->child[0]->val).k == Error) {
+        if (findVar(node->child[0]->val).k != Error) {
           std::string msg;
           msg.append("Cannot use () Op to normal variable");
           printSemanticError(NOT_A_FUNC, node->child[0]->lineNum, msg);
@@ -750,6 +753,9 @@ Type SymTable::Exp(pASTNode node) {
           }
         }
         // not found
+        std::string msg;
+        msg.append("Access UnExist Field");
+        printSemanticError(NON_EXIST_FIELD, node->child[0]->lineNum, msg);
         return error_type;
       }
     }
@@ -759,7 +765,7 @@ Type SymTable::Exp(pASTNode node) {
       auto fd = this->functionTable.find(node->child[0]->val);
       if (fd == this->functionTable.end()) {
         // not found
-        if (findVar(node->child[0]->val).k == Error) {
+        if (findVar(node->child[0]->val).k != Error) {
           std::string msg;
           msg.append("Cannot use () Op to normal variable");
           printSemanticError(NOT_A_FUNC, node->child[0]->lineNum, msg);

@@ -31,7 +31,7 @@ enum ErrorType {
   NOT_A_FUNC,           // Variable is not a Function
   NOT_A_INT,            // Variable is not a Integer
   ILLEGAL_USE_DOT,      // Illegal use of "."
-  NONEXISTFIELD,        // Non-existentfield
+  NON_EXIST_FIELD,        // Non-existentfield
   REDEF_FEILD,          // Redefined field
   DUPLICATED_NAME,      // Duplicated name
   UNDEF_STRUCT,         // Undefined structure
