@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ast.h"
 #include <iostream>
 #include <memory>
@@ -8,6 +10,8 @@
 
 #define LOG(message) logError(__LINE__, message)
 #define UNREACHABLE LOG("Should Not Reach Here")
+
+extern unsigned int semError;
 
 static inline void logError(int line, const std::string &message) {
   std::cerr << "[" << line << "]" << message << std::endl;
@@ -31,7 +35,7 @@ enum ErrorType {
   NOT_A_FUNC,           // Variable is not a Function
   NOT_A_INT,            // Variable is not a Integer
   ILLEGAL_USE_DOT,      // Illegal use of "."
-  NON_EXIST_FIELD,        // Non-existentfield
+  NON_EXIST_FIELD,      // Non-existentfield
   REDEF_FEILD,          // Redefined field
   DUPLICATED_NAME,      // Duplicated name
   UNDEF_STRUCT,         // Undefined structure
@@ -41,6 +45,7 @@ enum ErrorType {
 
 static inline void printSemanticError(ErrorType type, int lineno,
                                       std::string msg) {
+  semError = 1;
   std::cout << "Error type " << type << " at Line " << lineno << ": " << msg
             << std::endl;
 }
@@ -100,7 +105,7 @@ using FieldTable = std::unordered_map<std::string, Field>;
 using StructDefTable = std::unordered_map<std::string, Type>;
 
 class SymTable {
-private:
+public:
   FunctionTable functionTable;
   std::vector<FieldTable> fieldTableStack;
   StructDefTable structTable;
@@ -109,6 +114,29 @@ public:
   SymTable() {
     FieldTable t;
     fieldTableStack.push_back(t);
+
+    Type intType;
+    intType.k = Kind::Basic;
+    intType.basic = BasicType::Int;
+
+    Function w;
+    Field w_f;
+    w_f.name = "op";
+    w_f.type = intType;
+    w.fields.push_back(w_f);
+    w.has_body = true;
+    w.lineno = 0;
+    w.name = "write";
+    w.ret_type = intType;
+
+    Function r;
+    r.has_body = true;
+    r.lineno = 0;
+    r.name = "read";
+    r.ret_type = intType;
+
+    functionTable.insert({"write", w});
+    functionTable.insert({"read", r});
   }
   inline void traverseAST(pASTNode node) {
     if (node == nullptr) {
