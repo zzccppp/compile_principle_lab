@@ -106,7 +106,7 @@ Stmt: Exp SEMI  { $$ = newInternalNode(@$.first_line, "Stmt", 2, $1, $2); }
     | CompSt  { $$ = newInternalNode(@$.first_line, "Stmt", 1, $1); }
     | RETURN Exp SEMI  { $$ = newInternalNode(@$.first_line, "Stmt", 3, $1, $2, $3); }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
-    | IF LP Exp RP Stmt ELSE Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 6, $1, $2, $3, $4, $5, $6); }
+    | IF LP Exp RP Stmt ELSE Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 7, $1, $2, $3, $4, $5, $6, $7); }
     | WHILE LP Exp RP Stmt  { $$ = newInternalNode(@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
     | Exp error { synError = 1; printErrorMsg('B', @2.first_line, "missing ; (in Exp)"); }
     ;
@@ -155,7 +155,7 @@ PrimaryExp:
           | INT  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
           | FLOAT  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
           | STRING_LITERAL  { $$ = newInternalNode(@$.first_line, "Exp", 1, $1); }
-          | LP Exp RP   { $$ = newInternalNode(@$.first_line, "Exp", 3, $1); }
+          | LP Exp RP   { $$ = newInternalNode(@$.first_line, "Exp", 3, $1, $2, $3); }
           ;
 
 PostfixExp:

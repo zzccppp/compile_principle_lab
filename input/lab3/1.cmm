@@ -1,8 +1,36 @@
-int main(){
-    int n;
-    n = read();
-    if (n > 0) write(1);
-    else if (n < 0) write(-1);
-    else write(0);
+struct Point {
+    int p1;
+    int p2;
+    struct {
+        int subint;
+    } sub;
+};
+
+int add(int a1, int a2, int a3[3][4]) {
+    int sum = 0;
+    sum = sum + a1;
+    sum  = sum + a2;
+    sum = sum + a3[1][1];
+    return sum;
+}
+
+int main(int x, int y, int paramarr[2][4]){
+    struct Point po;
+    int arr[2][4][5];
+    int arr2 [3][4];
+    struct Point points[2][3][4];
+    po.p1;
+    po.p1 = 1;
+    po.p2 = 2;
+    po.sub.subint = 3;
+
+    arr[1][2][3] = 1;
+    paramarr[0][1] = 0;
+    // y = x + 1;
+    // x = x + y + 1;
+
+    points[1][2][3].sub.subint = 13;
+    add(x,po.p1,arr2);
+    write(x);
     return 0;
   }

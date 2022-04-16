@@ -1617,7 +1617,7 @@ yyreduce:
 
   case 49: /* PrimaryExp: LP Exp RP  */
 #line 158 "cmm.y"
-                        { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node)); }
+                        { (yyval.node) = newInternalNode((yyloc).first_line, "Exp", 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1622 "cmm.tab.c"
     break;
 

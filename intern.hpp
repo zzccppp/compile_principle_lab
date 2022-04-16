@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <cassert>
 
 enum OpKind {
     OP_VARIABLE,
@@ -23,6 +24,18 @@ struct Operand {
     OpKind kind;
     int value;
     std::string name;
+
+    Operand() = default;
+
+    Operand(OpKind kind, int value) {
+        this->kind = kind;
+        this->value = value;
+    }
+
+    Operand(OpKind kind, const std::string &s) {
+        this->kind = kind;
+        this->name = s;
+    }
 
     friend std::ostream &operator<<(std::ostream &os, const Operand &operand);
 };
@@ -68,10 +81,7 @@ struct InterCode {
         int size;
     } dec;
 
-    friend std::ostream &operator<<(std::ostream &os, const InterCode &code) {
-        os << "kind: " << code.kind;
-        return os;
-    }
+    friend std::ostream &operator<<(std::ostream &os, const InterCode &code);
 
     /**
      * 对于 IR_DEC 需要传入的是op1 value
@@ -137,6 +147,8 @@ struct InterCodeList {
 
     Operand newTemp();
 
+    Operand newLabel();
+
     void genIRCode(IRKind kind, std::initializer_list<Operand> ops);
 
     void printIRCodes() {
@@ -151,10 +163,17 @@ private:
     InterCodeList codes;
     StructDefTable structs;
     FunctionTable funcs;
+    FieldTable sym;
 public:
     void addStructures(StructDefTable &structs);
 
     void addFunctions(FunctionTable &funcs);
+
+    void addSymbols(FieldTable &tab) {
+        sym = tab;
+    }
+
+    Type expType(pASTNode exp);
 
     void genIR(pASTNode root);
 
@@ -163,4 +182,24 @@ public:
     void genFunDec(pASTNode funDec);
 
     void genCompSt(pASTNode compSt);
+
+    void genDefList(pASTNode defList);
+
+    void genStmtList(pASTNode stmtList);
+
+    void genDef(pASTNode def);
+
+    void genDec(pASTNode dec);
+
+    void genVarDec(pASTNode vardec, Operand* place);
+
+    void genExp(pASTNode exp, Operand* place);
+
+    void genCond(pASTNode exp, Operand* label1, Operand* label2);
+
+    void genStmt(pASTNode stmt);
+
+    inline void printIRCodes() {
+        codes.printIRCodes();
+    }
 };
