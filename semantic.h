@@ -131,7 +131,7 @@ public:
 
         Function w;
         Field w_f;
-        w_f.name = "op";
+        w_f.name = "writeopABACABAC";
         w_f.type = intType;
         w.fields.push_back(w_f);
         w.has_body = true;
