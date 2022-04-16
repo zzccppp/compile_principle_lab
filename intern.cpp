@@ -199,7 +199,7 @@ void IRGenerator::genStmt(pASTNode node) {
         genCond(exp, &label1, &label2);
         codes.genIRCode(IR_LABEL, {label1});
         genStmt(stmt);
-        auto label3 = codes.newTemp();
+        auto label3 = codes.newLabel();
         codes.genIRCode(IR_GOTO, {label3});
         codes.genIRCode(IR_LABEL, {label2});
         genStmt(node->child[6]);

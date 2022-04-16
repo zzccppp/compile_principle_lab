@@ -1527,7 +1527,7 @@ yyreduce:
 
   case 34: /* Stmt: IF LP Exp RP Stmt ELSE Stmt  */
 #line 109 "cmm.y"
-                                   { (yyval.node) = newInternalNode((yyloc).first_line, "Stmt", 6, (yyvsp[-6].node), (yyvsp[-5].node), (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node)); }
+                                   { (yyval.node) = newInternalNode((yyloc).first_line, "Stmt", 7, (yyvsp[-6].node), (yyvsp[-5].node), (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); }
 #line 1532 "cmm.tab.c"
     break;
 
